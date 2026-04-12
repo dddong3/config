@@ -16,6 +16,8 @@ macOS 開發環境設定檔備份與新環境建置指南。
 | `macos/` | Automator | `automator.md` | 手動建立 Quick Action |
 | `ssh/` | SSH | `config` | `~/.ssh/config` |
 | `claude/` | Claude Code | `settings.json`, `statusline-command.sh` | `~/.claude/` |
+| `scripts/` | 自動化腳本 | `bw-setup.sh`, `refresh-secrets.sh`, `rotate-*.sh` | 手動執行 |
+| `test/` | E2E 測試 | `e2e.sh` | 本機 Tart VM 測試 |
 
 ## 新環境建置
 
@@ -44,11 +46,12 @@ cd config
 
 ### SSH Key
 
-setup.sh 會自動處理 SSH key：
-1. 嘗試從 Bitwarden Secure Note（`ssh-keys`）還原已有的 key pair
-2. 如果 Bitwarden 沒有或未 unlock，則生成新的 ED25519 key
-3. 自動加入 macOS Keychain
-4. 如果 `gh` 已登入，自動上傳 public key 到 GitHub
+`scripts/bw-setup.sh`（Stage 2）會處理 SSH key：
+1. 從 Bitwarden Secure Note（`ssh-keys`）還原已有的 key pair
+2. 加入 macOS Keychain
+3. 如果 `gh` 已登入，自動上傳 public key 到 GitHub
+
+若 Bitwarden 中沒有 key，需手動生成（見下方）。
 
 兩把 key 的用途：
 
@@ -92,9 +95,13 @@ gh ssh-key add ~/.ssh/id_ed25519.pub --title "dong3-mbp-ed25519"
 
 ### Secrets 管理
 
-zshrc 中提供 `bw-setup-secrets` 指令，從 Vaultwarden 的 Secure Note（`dotfiles-secrets`）拉取環境變數並存入 `~/.secrets`。
+`scripts/bw-setup.sh`（Stage 2）首次從 Bitwarden 拉取 secrets 並存入 `~/.secrets`。
 
-首次執行會互動式詢問 Vaultwarden URL，之後自動從 `~/.secrets` 讀取。
+之後更新 secrets：在 Vaultwarden 網頁編輯 `dotfiles-secrets` note 後，執行：
+
+```bash
+./scripts/refresh-secrets.sh
+```
 
 ### Bitwarden Secure Notes
 
@@ -105,20 +112,34 @@ zshrc 中提供 `bw-setup-secrets` 指令，從 Vaultwarden 的 Secure Note（`d
 
 ### Secret Rotation
 
-| Secret | 如何 rotate | 更新步驟 |
-|--------|------------|----------|
-| `ANTHROPIC_AUTH_TOKEN` | 從平台重新申請 token | 1. 更新 Bitwarden `dotfiles-secrets` 2. 重跑 `./scripts/bw-setup.sh` |
-| `ATUIN_KEY` | 重新註冊 atuin 帳號 | 1. `atuin account logout` 2. 重新 register 3. 更新 Bitwarden `dotfiles-secrets` |
-| SSH key (`id_ed25519`) | 重新生成 | 1. `ssh-keygen -t ed25519 -C "dong3-code" -f ~/.ssh/id_ed25519` 2. 上傳到 Bitwarden（見上方腳本）3. `gh ssh-key add` |
-| SSH key (`homelab`) | 重新生成 | 1. `ssh-keygen -t ed25519 -C "dong3-homelab" -f ~/.ssh/homelab` 2. 上傳到 Bitwarden 3. `ssh-copy-id` 到各 server |
+每個 secret 有對應的 rotation 腳本：
 
-統一流程：
+| Secret | 腳本 |
+|--------|------|
+| `ANTHROPIC_AUTH_TOKEN` | `./scripts/rotate-anthropic-token.sh` |
+| `ATUIN_KEY` | `./scripts/rotate-atuin-key.sh` |
+| SSH keys | `./scripts/rotate-ssh-keys.sh` |
 
-```
-1. 在來源處 rotate（申請新 token / 生成新 key）
-2. 更新 Bitwarden（Vaultwarden 網頁編輯 or 上傳腳本）
-3. 本機重新拉取：./scripts/bw-setup.sh
-```
+腳本會自動更新本機 + Bitwarden。
+
+### Scripts 一覽
+
+| 腳本 | 用途 | 何時用 |
+|------|------|--------|
+| `bw-setup.sh` | 首次還原 secrets + SSH key + Claude settings | 新電腦 Stage 2 |
+| `refresh-secrets.sh` | 從 Bitwarden 重新拉取 secrets | 更新 Bitwarden note 後 |
+| `rotate-anthropic-token.sh` | Rotate API token | token 過期或洩漏 |
+| `rotate-ssh-keys.sh` | Rotate SSH key pair | key 洩漏或定期更換 |
+| `rotate-atuin-key.sh` | Rotate Atuin encryption key | 重新註冊 atuin |
+
+## 維護 Checklist
+
+新增工具時需同步更新：
+
+1. `setup.sh` — brew install 或 mise use 行
+2. `setup.sh` — verify 區塊加入驗證
+3. `README.md` — 結構表或說明（如有新設定檔）
+4. `test/e2e.sh` — EXPECTED_FAILS（如該工具 Stage 1 不可用）
 
 ## E2E 測試
 
@@ -152,5 +173,5 @@ brew install sshpass
 
 - 首次執行需要下載 VM image（~20GB），之後會使用 cache
 - 整體耗時約 10-15 分鐘（主要是 brew install）
-- E2E 不測試需要互動的步驟（bw-setup-secrets、atuin login、gh auth login）
-- SSH key 使用空 passphrase（`SSH_PASSPHRASE_CODE=''`），僅用於測試
+- E2E 只測試 Stage 1（不測試 bw-setup.sh、atuin login、gh auth login）
+- SSH key verify 預期失敗（需要 Stage 2 才還原）
