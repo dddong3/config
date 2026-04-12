@@ -52,11 +52,10 @@ echo "  Bitwarden updated."
 echo ""
 echo "[4] Updating GitHub..."
 if command -v gh &>/dev/null && gh auth status &>/dev/null; then
-  # Remove old key
-  OLD_ID=$(gh api /user/keys --jq '.[] | select(.key | contains("ed25519")) | .id' 2>/dev/null | head -1)
-  [ -n "$OLD_ID" ] && gh ssh-key delete "$OLD_ID" --yes 2>/dev/null
-  # Add new key
+  # Remove old key from this machine (match by title)
   KEY_TITLE="$(scutil --get ComputerName 2>/dev/null || hostname)-ed25519"
+  OLD_ID=$(gh api /user/keys --jq --arg title "$KEY_TITLE" '.[] | select(.title == $title) | .id' 2>/dev/null | head -1)
+  [ -n "$OLD_ID" ] && gh ssh-key delete "$OLD_ID" --yes 2>/dev/null
   gh ssh-key add ~/.ssh/id_ed25519.pub --title "$KEY_TITLE"
   echo "  GitHub updated ($KEY_TITLE)."
 else

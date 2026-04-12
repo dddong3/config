@@ -42,9 +42,10 @@ cd config
 
 ### Stage 3 — 服務設定（需要 Stage 2 的 secrets/key）
 
-3. `gh auth login` 登入 GitHub CLI（選 SSH protocol，key 已在 GitHub 上）
-4. `atuin login`，encryption key 用：`grep ATUIN_KEY ~/.secrets | cut -d"'" -f2`
-5. 編輯 `~/.gitconfig`，填入 `user.name` 和 `user.email`
+3. 上傳 SSH key 到 GitHub（如果是新 key）：`gh ssh-key add ~/.ssh/id_ed25519.pub --title "$(hostname)-ed25519"`
+4. `gh auth login` 登入 GitHub CLI（選 SSH protocol）
+5. `atuin login`，encryption key 用：`grep ATUIN_KEY ~/.secrets | cut -d"'" -f2`
+6. 編輯 `~/.gitconfig`，填入 `user.name` 和 `user.email`
 
 ### SSH Key
 

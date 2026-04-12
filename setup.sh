@@ -94,6 +94,7 @@ brew install --cask squirrel arc visual-studio-code obsidian bitwarden mos spoti
 # ── 7. Brew auto-update ──
 step "Configuring brew auto-update..."
 mkdir -p ~/Library/LaunchAgents
+brew tap homebrew/autoupdate 2>/dev/null || true
 brew autoupdate start 43200 --upgrade --cleanup || echo "Warning: brew autoupdate setup failed"
 
 step "Installing Oh My Zsh..."
@@ -152,9 +153,9 @@ else
   cat > "$HOOK_FILE" << 'HOOKEOF'
 #!/bin/bash
 # secret-scan: block commits containing likely secrets
-FILES=$(git diff --cached --diff-filter=ACM --name-only)
+FILES=$(git diff --cached --diff-filter=ACM -z --name-only)
 [ -z "$FILES" ] && exit 0
-if echo "$FILES" | xargs grep -lE "(sk-ant-|eyJhbGc|AKIA[A-Z0-9]{16}|ghp_|glpat-|BEGIN (OPENSSH|RSA|EC|DSA) PRIV[A]TE KEY)" 2>/dev/null; then
+if printf '%s' "$FILES" | xargs -0 grep -lE "(sk-ant-|eyJhbGc|AKIA[A-Z0-9]{16}|ghp_|glpat-|BEGIN (OPENSSH|RSA|EC|DSA) PRIV[A]TE KEY)" 2>/dev/null; then
   echo "ERROR: Staged files may contain secrets. Aborting commit."
   echo "If this is intentional, use: git commit --no-verify"
   exit 1
@@ -328,7 +329,7 @@ verify "Bitwarden (GUI)"    test -d /Applications/Bitwarden.app
 verify "Mos"                test -d /Applications/Mos.app
 verify "Spotify"            test -d /Applications/Spotify.app
 verify "Claude"             test -d /Applications/Claude.app
-verify "Claude Code"        command -v claude
+verify "Claude Code"        test -x "$HOME/.local/bin/claude"
 verify "zsh-syntax-hl"      test -f "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 verify "zsh-completions"    test -d "$(brew --prefix)/share/zsh-completions"
 
@@ -372,6 +373,7 @@ echo "  2. Grant Accessibility permissions to Mos and Ghostty (settings window o
 echo "  3. cd ~/Code/Github/config && ./scripts/bw-setup.sh"
 echo ""
 echo "Stage 3 — Services (requires Stage 2):"
-echo "  4. gh auth login (select SSH — key is already on GitHub)"
-echo "  5. atuin login (encryption key: grep ATUIN_KEY ~/.secrets | cut -d\"'\" -f2)"
-echo "  6. Edit ~/.gitconfig — set user.name and user.email"
+echo "  4. Upload SSH key to GitHub (if new): gh ssh-key add ~/.ssh/id_ed25519.pub --title \"\$(hostname)-ed25519\""
+echo "  5. gh auth login (select SSH protocol)"
+echo "  6. atuin login (encryption key: grep ATUIN_KEY ~/.secrets | cut -d\"'\" -f2)"
+echo "  7. Edit ~/.gitconfig — set user.name and user.email"
