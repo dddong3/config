@@ -60,12 +60,18 @@ brew install zsh-syntax-highlighting zsh-completions zoxide fzf chroma
 
 # Prompt
 brew install starship
+
+# 安裝 Homebrew 版 zsh 並設為預設 shell
+brew install zsh
+BREW_ZSH="$(brew --prefix)/bin/zsh"
+echo "$BREW_ZSH" | sudo tee -a /etc/shells
+chsh -s "$BREW_ZSH"
 ```
 
 ### 4. CLI 工具
 
 ```bash
-brew install jq bind helm viddy
+brew install jq bind helm viddy uv ccat
 ```
 
 ### 5. 容器 & 版本管理
@@ -157,6 +163,7 @@ cp shell/zshrc ~/.zshrc
 cp shell/vimrc ~/.vimrc
 cp prompt/starship.toml ~/.config/starship.toml
 cp terminal/ghostty.conf ~/Library/Application\ Support/com.mitchellh.ghostty/config
+cp editor/vscode-settings.json ~/Library/Application\ Support/Code/User/settings.json
 cp ime/rime/bopomofo.custom.yaml ~/Library/Rime/bopomofo.custom.yaml
 
 # Secrets (不進 repo，手動建立)

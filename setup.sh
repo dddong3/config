@@ -66,11 +66,13 @@ echo "[8/8] Deploying config files..."
 mkdir -p ~/.config
 mkdir -p ~/Library/Rime
 mkdir -p ~/Library/Application\ Support/com.mitchellh.ghostty
+mkdir -p ~/Library/Application\ Support/Code/User
 
 cp "$DOTFILES_DIR/shell/zshrc" ~/.zshrc
 cp "$DOTFILES_DIR/shell/vimrc" ~/.vimrc
 cp "$DOTFILES_DIR/prompt/starship.toml" ~/.config/starship.toml
 cp "$DOTFILES_DIR/terminal/ghostty.conf" ~/Library/Application\ Support/com.mitchellh.ghostty/config
+cp "$DOTFILES_DIR/editor/vscode-settings.json" ~/Library/Application\ Support/Code/User/settings.json
 cp "$DOTFILES_DIR/ime/rime/bopomofo.custom.yaml" ~/Library/Rime/bopomofo.custom.yaml
 
 echo ""

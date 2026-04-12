@@ -10,8 +10,11 @@
 # 安裝 starship
 brew install starship
 
-# 套用 Tokyo Night preset 作為基底
-starship preset tokyo-night -o ~/.config/starship.toml
+# 首次可用 Tokyo Night preset 產生基底（repo 中的 starship.toml 已在此基礎上自訂）
+# starship preset tokyo-night -o ~/.config/starship.toml
+
+# 部署自訂設定
+cp prompt/starship.toml ~/.config/starship.toml
 ```
 
 在 `~/.zshrc` 加入：
