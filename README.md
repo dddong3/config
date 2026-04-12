@@ -29,7 +29,7 @@ cd config
 
 安裝完後：
 1. 重開 terminal
-2. 執行 `bw-setup-secrets` 從 Vaultwarden 拉 secrets（含 SSH key 自動還原）
+2. 執行 `bw-setup-secrets` 從 Vaultwarden 拉 secrets
 3. 執行 `atuin login` 同步 shell 歷史
 4. 執行 `gh auth login` 登入 GitHub CLI（SSH key 會自動上傳）
 5. 執行 `mise use -g go terraform terraform-docs gcloud` 安裝語言/工具版本
