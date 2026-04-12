@@ -96,3 +96,38 @@ zshrc 中提供 `bw-setup-secrets` 指令，從 Vaultwarden 的 Secure Note（`d
 |-----------|------|
 | `dotfiles-secrets` | 環境變數（API token、BW_SERVER_URL 等） |
 | `ssh-keys` | SSH private/public key pairs |
+
+## E2E 測試
+
+用 [Tart](https://github.com/cirruslabs/tart) 在乾淨的 macOS VM 中自動測試完整 setup 流程。
+
+### 前置需求
+
+```bash
+brew install cirruslabs/cli/tart
+brew install sshpass
+```
+
+### 執行
+
+```bash
+./test/e2e.sh
+```
+
+### 流程
+
+1. 下載乾淨的 macOS Sequoia VM image
+2. 建立 VM 並啟動（headless）
+3. 等待 SSH 連線
+4. 設定 passwordless sudo
+5. 在 VM 中 `git clone` repo（public repo，不需認證）
+6. 執行 `setup.sh`（SSH key 使用空 passphrase 以避免互動）
+7. 驗證所有安裝項目和 config symlink
+8. 輸出結果並清理 VM
+
+### 注意事項
+
+- 首次執行需要下載 VM image（~20GB），之後會使用 cache
+- 整體耗時約 10-15 分鐘（主要是 brew install）
+- E2E 不測試需要互動的步驟（bw-setup-secrets、atuin login、gh auth login）
+- SSH key 使用空 passphrase（`SSH_PASSPHRASE_CODE=''`），僅用於測試
