@@ -84,18 +84,61 @@ ln -sf "$DOTFILES_DIR/ime/rime/bopomofo.custom.yaml" ~/Library/Rime/bopomofo.cus
 ln -sf "$DOTFILES_DIR/git/gitconfig" ~/.gitconfig
 ln -sf "$DOTFILES_DIR/claude/statusline-command.sh" ~/.claude/statusline-command.sh
 
-# ── 9. Deploy Claude Code settings (template, needs manual token setup) ──
+# ── 9. Deploy Claude Code settings ──
 step "Claude Code settings..."
 if [ ! -f ~/.claude/settings.json ]; then
   cp "$DOTFILES_DIR/claude/settings.json" ~/.claude/settings.json
   echo "  Copied settings.json template — edit ~/.claude/settings.json to replace placeholder tokens."
 else
-  echo "  ~/.claude/settings.json already exists, skipping (compare with claude/settings.json manually)."
+  echo "  ~/.claude/settings.json already exists, skipping."
 fi
 
-# Claude Code (statusline only; settings.json needs manual token setup)
-mkdir -p ~/.claude
-cp "$DOTFILES_DIR/claude/statusline-command.sh" ~/.claude/statusline-command.sh
+# ── Verification ──
+echo ""
+echo "=== Verification ==="
+PASS=0; FAIL=0
+verify() {
+  if eval "$2" &>/dev/null; then
+    echo "  ✓ $1"
+    PASS=$((PASS+1))
+  else
+    echo "  ✗ $1"
+    FAIL=$((FAIL+1))
+  fi
+}
+
+# Commands
+verify "Homebrew"           "command -v brew"
+verify "zsh (brew)"         "[ -x $(brew --prefix)/bin/zsh ]"
+verify "Starship"           "command -v starship"
+verify "Ghostty"            "[ -d /Applications/Ghostty.app ]"
+verify "Oh My Zsh"          "[ -d $HOME/.oh-my-zsh ]"
+verify "zoxide"             "command -v zoxide"
+verify "fzf"                "command -v fzf"
+verify "jq"                 "command -v jq"
+verify "gh"                 "command -v gh"
+verify "uv"                 "command -v uv"
+verify "mise"               "command -v mise"
+verify "colima"             "command -v colima"
+verify "atuin"              "command -v atuin"
+verify "Bitwarden CLI"      "command -v bw"
+verify "VS Code"            "[ -d '/Applications/Visual Studio Code.app' ]"
+
+# Config files (symlinks)
+verify "~/.zshrc"           "[ -L $HOME/.zshrc ]"
+verify "~/.vimrc"           "[ -L $HOME/.vimrc ]"
+verify "starship.toml"      "[ -L $HOME/.config/starship.toml ]"
+verify "ghostty.conf"       "[ -L \"$HOME/Library/Application Support/com.mitchellh.ghostty/config\" ]"
+verify "vscode settings"    "[ -L \"$HOME/Library/Application Support/Code/User/settings.json\" ]"
+verify "gitconfig"          "[ -L $HOME/.gitconfig ]"
+verify "statusline script"  "[ -L $HOME/.claude/statusline-command.sh ]"
+verify "claude settings"    "[ -f $HOME/.claude/settings.json ]"
+
+# Font
+verify "Maple Mono NF CN"   "fc-list | grep -q 'Maple Mono NF CN'"
+
+echo ""
+echo "Result: $PASS passed, $FAIL failed"
 
 echo ""
 echo "=== Setup complete ==="
