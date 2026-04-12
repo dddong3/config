@@ -1,0 +1,14 @@
+patch:
+  # 特定 App 預設英文模式（開啟時自動切英文）
+  app_options/com.apple.Terminal:
+    ascii_mode: true
+  app_options/com.mitchellh.ghostty:
+    ascii_mode: true
+  app_options/com.microsoft.VSCode:
+    ascii_mode: true
+  app_options/com.todesktop.230313mzl4w4u92:
+    ascii_mode: true              # Cursor
+  app_options/com.googlecode.iterm2:
+    ascii_mode: true
+  app_options/com.github.wez.wezterm:
+    ascii_mode: true

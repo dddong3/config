@@ -113,6 +113,7 @@ ln -sf "$DOTFILES_DIR/prompt/starship.toml" ~/.config/starship.toml
 ln -sf "$DOTFILES_DIR/terminal/ghostty.conf" ~/Library/Application\ Support/com.mitchellh.ghostty/config
 ln -sf "$DOTFILES_DIR/editor/vscode-settings.json" ~/Library/Application\ Support/Code/User/settings.json
 ln -sf "$DOTFILES_DIR/ime/rime/bopomofo.custom.yaml" ~/Library/Rime/bopomofo.custom.yaml
+ln -sf "$DOTFILES_DIR/ime/rime/squirrel.custom.yaml" ~/Library/Rime/squirrel.custom.yaml
 # gitconfig uses cp (not symlink) — user edits name/email locally
 if [ ! -f ~/.gitconfig ]; then
   cp "$DOTFILES_DIR/git/gitconfig" ~/.gitconfig
@@ -301,7 +302,8 @@ verify "~/.vimrc"           test -L "$HOME/.vimrc"
 verify "starship.toml"      test -L "$HOME/.config/starship.toml"
 verify "ghostty.conf"       test -L "$HOME/Library/Application Support/com.mitchellh.ghostty/config"
 verify "vscode settings"    test -L "$HOME/Library/Application Support/Code/User/settings.json"
-verify "rime config"        test -L "$HOME/Library/Rime/bopomofo.custom.yaml"
+verify "rime bopomofo"      test -L "$HOME/Library/Rime/bopomofo.custom.yaml"
+verify "rime squirrel"      test -L "$HOME/Library/Rime/squirrel.custom.yaml"
 verify "gitconfig"          test -f "$HOME/.gitconfig"
 verify "SSH key"            test -f "$HOME/.ssh/id_ed25519"
 verify "statusline script"  test -L "$HOME/.claude/statusline-command.sh"
