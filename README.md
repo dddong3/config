@@ -40,9 +40,7 @@ cd config
 
 3. 執行 `atuin login` 同步 shell 歷史
 4. 執行 `gh auth login` 登入 GitHub CLI
-5. 執行 `mise use -g go terraform terraform-docs gcloud` 安裝語言/工具版本
-6. 編輯 `~/.claude/settings.json`，替換 `ANTHROPIC_BASE_URL` 和 `ANTHROPIC_AUTH_TOKEN`
-7. 編輯 `~/.gitconfig`，填入 `user.name` 和 `user.email`
+5. 編輯 `~/.gitconfig`，填入 `user.name` 和 `user.email`
 
 ### SSH Key
 

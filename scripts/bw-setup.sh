@@ -55,6 +55,17 @@ echo "[3] Adding SSH keys to Keychain (enter passphrase when prompted)..."
 ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 ssh-add --apple-use-keychain ~/.ssh/homelab
 
+# ── 4. Update Claude Code settings ──
+echo "[4] Updating Claude Code settings..."
+source ~/.secrets
+if [ -f ~/.claude/settings.json ] && [ -n "$ANTHROPIC_BASE_URL" ] && [ -n "$ANTHROPIC_AUTH_TOKEN" ]; then
+  sed -i '' "s|<your-api-base-url>|$ANTHROPIC_BASE_URL|" ~/.claude/settings.json
+  sed -i '' "s|<your-auth-token>|$ANTHROPIC_AUTH_TOKEN|" ~/.claude/settings.json
+  echo "  Claude Code settings updated."
+else
+  echo "  Skipped (settings.json not found or tokens missing from secrets)."
+fi
+
 # ── Done ──
 unset BW_SESSION
 echo ""
