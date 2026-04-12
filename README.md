@@ -16,7 +16,7 @@ macOS 開發環境設定檔備份與新環境建置指南。
 | `macos/` | Automator | `automator.md` | 手動建立 Quick Action |
 | `ssh/` | SSH | `config` | `~/.ssh/config` |
 | `claude/` | Claude Code | `settings.json`, `statusline-command.sh` | `~/.claude/` |
-| `scripts/` | 自動化腳本 | `bw-setup.sh`, `refresh-secrets.sh`, `rotate-*.sh` | 手動執行 |
+| `scripts/` | 自動化腳本 | `bw-auth.sh`, `bw-setup.sh`, `refresh-secrets.sh`, `rotate-*.sh` | 手動執行 |
 | `test/` | E2E 測試 | `e2e.sh` | 本機 Tart VM 測試 |
 
 ## 新環境建置
@@ -51,9 +51,8 @@ cd config
 `scripts/bw-setup.sh`（Stage 2）會處理 SSH key：
 1. 從 Bitwarden Secure Note（`ssh-keys`）還原已有的 key pair
 2. 加入 macOS Keychain
-3. 如果 `gh` 已登入，自動上傳 public key 到 GitHub
 
-若 Bitwarden 中沒有 key，需手動生成（見下方）。
+若 Bitwarden 中沒有 key，需手動生成（見下方）。若需 rotate，用 `scripts/rotate-ssh-keys.sh`（會自動上傳新 key 到 GitHub）。
 
 兩把 key 的用途：
 
@@ -71,25 +70,13 @@ ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 ssh-add --apple-use-keychain ~/.ssh/homelab
 ```
 
-上傳到 Bitwarden（使用腳本避免複製空白問題）：
+上傳到 Bitwarden 並同步 GitHub（使用 rotation 腳本一次完成）：
 
 ```bash
-cat << 'SCRIPT' > /tmp/upload-ssh.sh
-#!/bin/bash
-NOTES=$(jq -rn \
-  --rawfile code_key "$HOME/.ssh/id_ed25519" \
-  --rawfile code_pub "$HOME/.ssh/id_ed25519.pub" \
-  --rawfile lab_key "$HOME/.ssh/homelab" \
-  --rawfile lab_pub "$HOME/.ssh/homelab.pub" \
-  '"--- id_ed25519 (code) ---\n" + $code_key + "\n--- id_ed25519.pub ---\n" + $code_pub + "\n--- homelab (private) ---\n" + $lab_key + "\n--- homelab.pub ---\n" + $lab_pub')
-ITEM_ID=$(bw get item ssh-keys | jq -r '.id')
-bw get item ssh-keys | jq --arg notes "$NOTES" '.notes = $notes' | bw encode | bw edit item "$ITEM_ID" > /dev/null && echo "Bitwarden updated."
-SCRIPT
-export BW_SESSION=$(bw unlock --raw)
-bash /tmp/upload-ssh.sh
+./scripts/rotate-ssh-keys.sh
 ```
 
-上傳到 GitHub：
+或手動上傳到 GitHub：
 
 ```bash
 gh ssh-key add ~/.ssh/id_ed25519.pub --title "dong3-mbp-ed25519"
@@ -128,8 +115,9 @@ gh ssh-key add ~/.ssh/id_ed25519.pub --title "dong3-mbp-ed25519"
 
 | 腳本 | 用途 | 何時用 |
 |------|------|--------|
+| `bw-auth.sh` | 共用 Bitwarden 認證 helper（被其他腳本 source）| 不直接執行 |
 | `bw-setup.sh` | 首次還原 secrets + SSH key + Claude settings | 新電腦 Stage 2 |
-| `refresh-secrets.sh` | 從 Bitwarden 重新拉取 secrets | 更新 Bitwarden note 後 |
+| `refresh-secrets.sh` | 從 Bitwarden 重新拉取 secrets 並同步 Claude settings | 更新 Bitwarden note 後 |
 | `rotate-anthropic-token.sh` | Rotate API token | token 過期或洩漏 |
 | `rotate-ssh-keys.sh` | Rotate SSH key pair | key 洩漏或定期更換 |
 | `rotate-atuin-key.sh` | Rotate Atuin encryption key | 重新註冊 atuin |
@@ -142,6 +130,13 @@ gh ssh-key add ~/.ssh/id_ed25519.pub --title "dong3-mbp-ed25519"
 2. `setup.sh` — verify 區塊加入驗證
 3. `README.md` — 結構表或說明（如有新設定檔）
 4. `test/e2e.sh` — EXPECTED_FAILS（如該工具 Stage 1 不可用）
+
+新增 secret 時：
+
+5. 在 Bitwarden `dotfiles-secrets` note 加入 `export KEY=value`
+6. 如需 rotation 自動化，新增 `scripts/rotate-*.sh`（source `bw-auth.sh`）
+
+注意：`setup.sh` 會安裝 pre-commit hook 防止意外 commit secrets，僅在執行 `setup.sh` 後生效。
 
 ## E2E 測試
 

@@ -1,4 +1,4 @@
-macOS Automator Quick Action：用 Cursor 開啟選取檔案
+macOS Automator Quick Action：用 VS Code 開啟選取檔案
 
 1. Workflow 設定
 

@@ -33,7 +33,7 @@ set mouse=a
 set hidden
 set autowrite
 set backspace=indent,eol,start
-set clipboard=unnamedplus
+set clipboard=unnamed
 set splitright
 set splitbelow
 set updatetime=300

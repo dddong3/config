@@ -143,12 +143,18 @@ fi
 # ── Pre-commit hook (prevent accidental secret commits) ──
 step "Installing pre-commit hook..."
 HOOK_FILE="$DOTFILES_DIR/.git/hooks/pre-commit"
-if [ ! -f "$HOOK_FILE" ] || ! grep -q 'secret-scan' "$HOOK_FILE" 2>/dev/null; then
+if [ -f "$HOOK_FILE" ] && grep -q 'secret-scan' "$HOOK_FILE" 2>/dev/null; then
+  echo "  Pre-commit hook already installed."
+elif [ -f "$HOOK_FILE" ]; then
+  echo "  Warning: existing pre-commit hook found (not ours). Skipping."
+  echo "  To add secret scanning, append the secret-scan block manually."
+else
   cat > "$HOOK_FILE" << 'HOOKEOF'
 #!/bin/bash
 # secret-scan: block commits containing likely secrets
-if git diff --cached --diff-filter=ACM -z --name-only | \
-   xargs -0 grep -lE "(sk-ant-|eyJhbGc|AKIA[A-Z0-9]{16}|ghp_|glpat-|BEGIN OPENSSH PRIVATE KEY)" 2>/dev/null; then
+FILES=$(git diff --cached --diff-filter=ACM --name-only)
+[ -z "$FILES" ] && exit 0
+if echo "$FILES" | xargs grep -lE "(sk-ant-|eyJhbGc|AKIA[A-Z0-9]{16}|ghp_|glpat-|BEGIN (OPENSSH|RSA|EC|DSA) PRIV[A]TE KEY)" 2>/dev/null; then
   echo "ERROR: Staged files may contain secrets. Aborting commit."
   echo "If this is intentional, use: git commit --no-verify"
   exit 1
@@ -156,8 +162,6 @@ fi
 HOOKEOF
   chmod +x "$HOOK_FILE"
   echo "  Pre-commit hook installed."
-else
-  echo "  Pre-commit hook already exists."
 fi
 
 # ── macOS System Preferences ──

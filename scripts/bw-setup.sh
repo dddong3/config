@@ -4,25 +4,20 @@ set -eo pipefail
 # Stage 2: Restore secrets and SSH keys from Bitwarden
 # Run once after setup.sh on a new machine
 
-command -v bw &>/dev/null || { echo "Error: bw not found. Run setup.sh first."; exit 1; }
-
 echo "=== Bitwarden Setup ==="
 echo ""
 
 # ── Login ──
-read -rp "Vaultwarden URL: " BW_SERVER_URL
-bw config server "$BW_SERVER_URL"
-if bw login --check &>/dev/null; then
-  BW_SESSION=$(bw unlock --raw)
-else
-  BW_SESSION=$(bw login --raw)
-fi
-export BW_SESSION
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/bw-auth.sh"
+bw sync
 
 # ── 1. Secrets ──
 echo ""
 echo "[1] Pulling secrets from Bitwarden..."
 tmp=$(mktemp)
+trap 'rm -f "$tmp" "$tmp_key" "$tmp_json"' EXIT
+
 bw get notes dotfiles-secrets > "$tmp"
 if [ -s "$tmp" ]; then
   mv "$tmp" ~/.secrets
@@ -43,18 +38,30 @@ if [ -z "$notes" ]; then
 fi
 
 mkdir -p ~/.ssh
-echo "$notes" | awk '/BEGIN OPENSSH/{c++} c==1{print; if(/END OPENSSH PRIVATE KEY/)exit}' > ~/.ssh/id_ed25519
-echo "$notes" | awk '/ssh-ed25519.*dong3-code/{print}' > ~/.ssh/id_ed25519.pub
-chmod 600 ~/.ssh/id_ed25519
 
-echo "$notes" | awk '/BEGIN OPENSSH/{c++} c==2{print; if(/END OPENSSH PRIVATE KEY/)exit}' > ~/.ssh/homelab
+# Write keys atomically (mktemp with pre-set permissions to avoid exposure window)
+tmp_key=$(mktemp ~/.ssh/.tmp.XXXXXX)
+chmod 600 "$tmp_key"
+echo "$notes" | awk '/BEGIN OPENSSH/{c++} c==1{print; if(/END OPENSSH PRIVATE KEY/)exit}' > "$tmp_key"
+mv "$tmp_key" ~/.ssh/id_ed25519
+echo "$notes" | awk '/ssh-ed25519.*dong3-code/{print}' > ~/.ssh/id_ed25519.pub
+
+tmp_key=$(mktemp ~/.ssh/.tmp.XXXXXX)
+chmod 600 "$tmp_key"
+echo "$notes" | awk '/BEGIN OPENSSH/{c++} c==2{print; if(/END OPENSSH PRIVATE KEY/)exit}' > "$tmp_key"
+mv "$tmp_key" ~/.ssh/homelab
 echo "$notes" | awk '/ssh-ed25519.*dong3-homelab/{print}' > ~/.ssh/homelab.pub
-chmod 600 ~/.ssh/homelab
 
 # Validate keys are not empty
 for key in ~/.ssh/id_ed25519 ~/.ssh/homelab; do
   if ! grep -q 'BEGIN OPENSSH' "$key" 2>/dev/null; then
     echo "  Error: $key is empty or malformed. Check Bitwarden note format."
+    exit 1
+  fi
+done
+for pub in ~/.ssh/id_ed25519.pub ~/.ssh/homelab.pub; do
+  if ! grep -q 'ssh-ed25519' "$pub" 2>/dev/null; then
+    echo "  Error: $pub is empty or malformed. Check Bitwarden note format."
     exit 1
   fi
 done
@@ -71,8 +78,12 @@ ssh-add --apple-use-keychain ~/.ssh/homelab
 echo "[4] Updating Claude Code settings..."
 source ~/.secrets
 if [ -f ~/.claude/settings.json ] && [ -n "$ANTHROPIC_BASE_URL" ] && [ -n "$ANTHROPIC_AUTH_TOKEN" ]; then
-  sed -i '' "s|<your-api-base-url>|$ANTHROPIC_BASE_URL|" ~/.claude/settings.json
-  sed -i '' "s|<your-auth-token>|$ANTHROPIC_AUTH_TOKEN|" ~/.claude/settings.json
+  tmp_json=$(mktemp)
+  jq --arg url "$ANTHROPIC_BASE_URL" --arg tok "$ANTHROPIC_AUTH_TOKEN" \
+     '.env.ANTHROPIC_BASE_URL = $url | .env.ANTHROPIC_AUTH_TOKEN = $tok' \
+     ~/.claude/settings.json > "$tmp_json"
+  mv "$tmp_json" ~/.claude/settings.json
+  chmod 600 ~/.claude/settings.json
   echo "  Claude Code settings updated."
 else
   echo "  Skipped (settings.json or tokens not found)."

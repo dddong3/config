@@ -26,7 +26,8 @@ echo ""
 echo "[3] Updating ~/.secrets..."
 if [ -f ~/.secrets ]; then
   if grep -q ATUIN_KEY ~/.secrets; then
-    sed -i '' "s|^export ATUIN_KEY=.*|export ATUIN_KEY='$NEW_KEY'|" ~/.secrets
+    awk -v val="$NEW_KEY" '/^export ATUIN_KEY=/{$0="export ATUIN_KEY='"'"'" val "'"'"'"} 1' ~/.secrets > ~/.secrets.tmp && mv ~/.secrets.tmp ~/.secrets
+    chmod 600 ~/.secrets
   else
     echo "export ATUIN_KEY='$NEW_KEY'" >> ~/.secrets
   fi
@@ -37,17 +38,18 @@ fi
 echo ""
 echo "[4] Updating Bitwarden..."
 command -v bw &>/dev/null || { echo "Warning: bw not found, skip Bitwarden update."; exit 0; }
-source ~/.secrets
-export BW_SESSION=$(bw unlock --raw)
-ITEM_ID=$(bw get item dotfiles-secrets | jq -r '.id')
-CURRENT=$(bw get notes dotfiles-secrets)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/bw-auth.sh"
+ITEM=$(bw get item dotfiles-secrets)
+ITEM_ID=$(echo "$ITEM" | jq -r '.id')
+CURRENT=$(echo "$ITEM" | jq -r '.notes')
 if echo "$CURRENT" | grep -q ATUIN_KEY; then
-  NEW=$(echo "$CURRENT" | sed "s|^export ATUIN_KEY=.*|export ATUIN_KEY='$NEW_KEY'|")
+  NEW=$(echo "$CURRENT" | awk -v val="$NEW_KEY" '/^export ATUIN_KEY=/{$0="export ATUIN_KEY='"'"'" val "'"'"'"} 1')
 else
   NEW="$CURRENT
 export ATUIN_KEY='$NEW_KEY'"
 fi
-ENCODED=$(bw get item dotfiles-secrets | jq --arg notes "$NEW" '.notes = $notes' | bw encode)
+ENCODED=$(echo "$ITEM" | jq --arg notes "$NEW" '.notes = $notes' | bw encode)
 bw edit item "$ITEM_ID" "$ENCODED" > /dev/null
 unset BW_SESSION
 echo "  Bitwarden updated."

@@ -13,23 +13,31 @@ read -rp "Paste new ANTHROPIC_AUTH_TOKEN: " NEW_TOKEN
 
 read -rp "Paste new ANTHROPIC_BASE_URL (leave empty to keep current): " NEW_URL
 
-# Update ~/.secrets
+# Update ~/.secrets (awk avoids sed metacharacter issues with tokens)
 if [ -f ~/.secrets ]; then
-  sed -i '' "s|^export ANTHROPIC_AUTH_TOKEN=.*|export ANTHROPIC_AUTH_TOKEN='$NEW_TOKEN'|" ~/.secrets
+  awk -v val="$NEW_TOKEN" '/^export ANTHROPIC_AUTH_TOKEN=/{$0="export ANTHROPIC_AUTH_TOKEN='"'"'" val "'"'"'"} 1' ~/.secrets > ~/.secrets.tmp && mv ~/.secrets.tmp ~/.secrets
   if [ -n "$NEW_URL" ]; then
-    sed -i '' "s|^export ANTHROPIC_BASE_URL=.*|export ANTHROPIC_BASE_URL='$NEW_URL'|" ~/.secrets
+    awk -v val="$NEW_URL" '/^export ANTHROPIC_BASE_URL=/{$0="export ANTHROPIC_BASE_URL='"'"'" val "'"'"'"} 1' ~/.secrets > ~/.secrets.tmp && mv ~/.secrets.tmp ~/.secrets
   fi
+  chmod 600 ~/.secrets
   echo "  ~/.secrets updated."
 fi
 
 # Update ~/.claude/settings.json
 if [ -f ~/.claude/settings.json ]; then
-  OLD_TOKEN=$(python3 -c "import json; d=json.load(open('$HOME/.claude/settings.json')); print(d['env'].get('ANTHROPIC_AUTH_TOKEN',''))")
-  [ -n "$OLD_TOKEN" ] && sed -i '' "s|$OLD_TOKEN|$NEW_TOKEN|" ~/.claude/settings.json
+  tmp_json=$(mktemp)
+  trap 'rm -f "$tmp_json"' EXIT
   if [ -n "$NEW_URL" ]; then
-    OLD_URL=$(python3 -c "import json; d=json.load(open('$HOME/.claude/settings.json')); print(d['env'].get('ANTHROPIC_BASE_URL',''))")
-    [ -n "$OLD_URL" ] && sed -i '' "s|$OLD_URL|$NEW_URL|" ~/.claude/settings.json
+    jq --arg tok "$NEW_TOKEN" --arg url "$NEW_URL" \
+       '.env.ANTHROPIC_AUTH_TOKEN = $tok | .env.ANTHROPIC_BASE_URL = $url' \
+       ~/.claude/settings.json > "$tmp_json"
+  else
+    jq --arg tok "$NEW_TOKEN" \
+       '.env.ANTHROPIC_AUTH_TOKEN = $tok' \
+       ~/.claude/settings.json > "$tmp_json"
   fi
+  mv "$tmp_json" ~/.claude/settings.json
+  chmod 600 ~/.claude/settings.json
   echo "  ~/.claude/settings.json updated."
 fi
 
@@ -37,15 +45,16 @@ fi
 echo ""
 echo "Updating Bitwarden..."
 command -v bw &>/dev/null || { echo "Warning: bw not found, skip Bitwarden update."; exit 0; }
-source ~/.secrets
-export BW_SESSION=$(bw unlock --raw)
-ITEM_ID=$(bw get item dotfiles-secrets | jq -r '.id')
-CURRENT=$(bw get notes dotfiles-secrets)
-NEW=$(echo "$CURRENT" | sed "s|^export ANTHROPIC_AUTH_TOKEN=.*|export ANTHROPIC_AUTH_TOKEN='$NEW_TOKEN'|")
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/bw-auth.sh"
+ITEM=$(bw get item dotfiles-secrets)
+ITEM_ID=$(echo "$ITEM" | jq -r '.id')
+CURRENT=$(echo "$ITEM" | jq -r '.notes')
+NEW=$(echo "$CURRENT" | awk -v val="$NEW_TOKEN" '/^export ANTHROPIC_AUTH_TOKEN=/{$0="export ANTHROPIC_AUTH_TOKEN='"'"'" val "'"'"'"} 1')
 if [ -n "$NEW_URL" ]; then
-  NEW=$(echo "$NEW" | sed "s|^export ANTHROPIC_BASE_URL=.*|export ANTHROPIC_BASE_URL='$NEW_URL'|")
+  NEW=$(echo "$NEW" | awk -v val="$NEW_URL" '/^export ANTHROPIC_BASE_URL=/{$0="export ANTHROPIC_BASE_URL='"'"'" val "'"'"'"} 1')
 fi
-ENCODED=$(bw get item dotfiles-secrets | jq --arg notes "$NEW" '.notes = $notes' | bw encode)
+ENCODED=$(echo "$ITEM" | jq --arg notes "$NEW" '.notes = $notes' | bw encode)
 bw edit item "$ITEM_ID" "$ENCODED" > /dev/null
 unset BW_SESSION
 echo "  Bitwarden updated."

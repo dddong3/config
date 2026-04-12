@@ -41,6 +41,7 @@ VM_PID=$!
 # ── 3. Wait for SSH ──
 echo "[3] Waiting for SSH (up to 5 min)..."
 VM_IP=""
+SSH_READY=false
 for i in $(seq 1 60); do
   VM_IP=$(tart ip "$VM_NAME" 2>/dev/null || true)
   if [ -n "$VM_IP" ]; then
@@ -48,12 +49,13 @@ for i in $(seq 1 60); do
        -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no \
        "$VM_USER@$VM_IP" true 2>/dev/null; then
       echo "  SSH ready at $VM_IP"
+      SSH_READY=true
       break
     fi
   fi
   sleep 5
 done
-[ -z "$VM_IP" ] && { echo "Error: VM did not become reachable via SSH"; exit 1; }
+$SSH_READY || { echo "Error: VM did not become reachable via SSH"; exit 1; }
 
 export SSHPASS="$VM_PASS"
 SSH="sshpass -e ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no $VM_USER@$VM_IP"
@@ -84,17 +86,17 @@ echo ""
 grep -E '(✓|✗|Result:)' "$LOG" || true
 
 # Expected failures after Stage 1 (no secrets/SSH key yet)
-EXPECTED_FAILS="SSH key"
+EXPECTED_FAILS=("SSH key")
 echo ""
-echo "Note: '$EXPECTED_FAILS' is expected to fail (requires Stage 2: bw-setup.sh)"
+echo "Note: '${EXPECTED_FAILS[*]}' is expected to fail (requires Stage 2: bw-setup.sh)"
 
 echo ""
 TOTAL_FAIL=$(grep -c '✗' "$LOG" || true)
 UNEXPECTED=0
 while IFS= read -r line; do
   match=false
-  for exp in $EXPECTED_FAILS; do
-    if echo "$line" | grep -q "$exp"; then
+  for exp in "${EXPECTED_FAILS[@]}"; do
+    if echo "$line" | grep -qF "$exp"; then
       match=true
       break
     fi

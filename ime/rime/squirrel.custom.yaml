@@ -6,7 +6,3 @@ patch:
     ascii_mode: true
   app_options/com.microsoft.VSCode:
     ascii_mode: true
-  app_options/com.googlecode.iterm2:
-    ascii_mode: true
-  app_options/com.github.wez.wezterm:
-    ascii_mode: true

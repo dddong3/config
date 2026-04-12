@@ -8,22 +8,41 @@ plugins=(
   zoxide
 )
 
-[ -d "$ZSH" ] && source $ZSH/oh-my-zsh.sh
+# Colorize plugin (evaluated lazily at call time, must be set before first use)
+export ZSH_COLORIZE_CHROMA_FORMATTER=terminal256
+export ZSH_COLORIZE_TOOL=chroma
 
 export PATH="$HOME/.local/bin:$PATH"
 
+# Cache brew prefix (avoids repeated subprocess forks)
 if type brew &>/dev/null; then
-  FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
-  autoload -Uz compinit
-  compinit -C
+  BREW_PREFIX="$(brew --prefix)"
+fi
 
-  # zsh-syntax-highlighting (must be inside brew guard)
-  ZSH_HL="$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+# Completions: FPATH must be set BEFORE oh-my-zsh.sh (which calls compinit)
+if [ -n "$BREW_PREFIX" ]; then
+  FPATH="$BREW_PREFIX/share/zsh-completions:$BREW_PREFIX/share/zsh/site-functions:$FPATH"
+fi
+
+# Skip compaudit insecure-dir warnings for brew-managed dirs
+export ZSH_DISABLE_COMPFIX=true
+[ -d "$ZSH" ] && source $ZSH/oh-my-zsh.sh
+
+# zsh-syntax-highlighting
+if [ -n "$BREW_PREFIX" ]; then
+  ZSH_HL="$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
   [ -f "$ZSH_HL" ] && source "$ZSH_HL"
 fi
 
 # mise (version manager)
 command -v mise &>/dev/null && eval "$(mise activate zsh)"
+
+# Google Cloud SDK
+if [ -n "$BREW_PREFIX" ]; then
+  GCLOUD_DIR="$BREW_PREFIX/share/google-cloud-sdk"
+  [ -f "$GCLOUD_DIR/path.zsh.inc" ] && source "$GCLOUD_DIR/path.zsh.inc"
+  [ -f "$GCLOUD_DIR/completion.zsh.inc" ] && source "$GCLOUD_DIR/completion.zsh.inc"
+fi
 
 # Go (runtime managed by mise, GOPATH for user packages)
 export GOPATH=$HOME/go
@@ -37,13 +56,6 @@ fi
 
 # Secrets (pulled from Bitwarden once via scripts/bw-setup.sh)
 [ -f ~/.secrets ] && source ~/.secrets
-
-# Colorize plugin
-export ZSH_COLORIZE_CHROMA_FORMATTER=terminal256
-export ZSH_COLORIZE_TOOL=chroma
-
-# Disable default ctrl+R (use atuin instead)
-bindkey -r '^R'
 
 # Atuin (shell history sync, installed via brew)
 command -v atuin &>/dev/null && eval "$(atuin init zsh)"
