@@ -19,7 +19,7 @@ macOS 開發環境設定檔備份與新環境建置指南。
 ### 一鍵安裝
 
 ```bash
-git clone https://github.com/<your-username>/config.git
+git clone https://github.com/dddong3/config.git
 cd config
 ./setup.sh
 ```
@@ -71,7 +71,7 @@ chsh -s "$BREW_ZSH"
 ### 4. CLI 工具
 
 ```bash
-brew install jq bind helm viddy uv ccat
+brew install jq bind helm viddy uv ccat bitwarden-cli gh
 ```
 
 ### 5. 容器 & 版本管理
@@ -102,7 +102,7 @@ atuin key
 ### 7. Bitwarden CLI（Secrets 管理）
 
 ```bash
-brew install bitwarden-cli
+# bitwarden-cli 已在步驟 4 安裝
 
 # 設定 self-hosted Vaultwarden
 bw config server https://***REMOVED***
@@ -119,7 +119,7 @@ bw status
 export HISHTORY_S3_SECRET_ACCESS_KEY='your-key-here'
 ```
 
-zshrc 中會自動從 Bitwarden 載入 secrets（需先 `bw unlock`）。
+zshrc 中提供 `bw-setup-secrets` 指令，執行一次即可從 Vaultwarden 拉取 secrets 並存入 `~/.secrets`。
 
 ### 8. 其他
 
@@ -155,20 +155,17 @@ ZSH_COLORIZE_CHROMA_FORMATTER=terminal256
 
 `z` 取代 `cd`，`zi` 進入互動模式。
 
-## 部署設定檔
+## 手動部署設定檔
+
+如果不使用 `setup.sh`，可手動複製：
 
 ```bash
-# 複製設定檔到對應位置
+mkdir -p ~/.config ~/Library/Rime ~/Library/Application\ Support/com.mitchellh.ghostty ~/Library/Application\ Support/Code/User
+
 cp shell/zshrc ~/.zshrc
 cp shell/vimrc ~/.vimrc
 cp prompt/starship.toml ~/.config/starship.toml
 cp terminal/ghostty.conf ~/Library/Application\ Support/com.mitchellh.ghostty/config
 cp editor/vscode-settings.json ~/Library/Application\ Support/Code/User/settings.json
 cp ime/rime/bopomofo.custom.yaml ~/Library/Rime/bopomofo.custom.yaml
-
-# Secrets (不進 repo，手動建立)
-# 放 HISHTORY_S3_SECRET_ACCESS_KEY 等敏感變數
-touch ~/.secrets
 ```
-
-zshrc 中已包含 `eval "$(starship init zsh)"`，部署後 Starship 會自動生效。
