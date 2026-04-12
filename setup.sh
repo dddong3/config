@@ -94,12 +94,11 @@ brew install --cask squirrel arc visual-studio-code obsidian bitwarden mos spoti
 # ── 7. Brew auto-update ──
 step "Configuring brew auto-update..."
 mkdir -p ~/Library/LaunchAgents
-brew tap homebrew/autoupdate 2>/dev/null || true
 brew autoupdate start 43200 --upgrade --cleanup || echo "Warning: brew autoupdate setup failed"
 
 step "Installing Oh My Zsh..."
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
-  RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+  RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 else
   echo "  Oh My Zsh already installed."
 fi
@@ -134,9 +133,31 @@ ln -sf "$DOTFILES_DIR/ssh/config" ~/.ssh/config
 step "Claude Code settings..."
 if [ ! -f ~/.claude/settings.json ]; then
   cp "$DOTFILES_DIR/claude/settings.json" ~/.claude/settings.json
+  chmod 600 ~/.claude/settings.json
   echo "  Copied settings.json template — edit ~/.claude/settings.json to replace placeholder tokens."
 else
+  chmod 600 ~/.claude/settings.json
   echo "  ~/.claude/settings.json already exists, skipping."
+fi
+
+# ── Pre-commit hook (prevent accidental secret commits) ──
+step "Installing pre-commit hook..."
+HOOK_FILE="$DOTFILES_DIR/.git/hooks/pre-commit"
+if [ ! -f "$HOOK_FILE" ] || ! grep -q 'secret-scan' "$HOOK_FILE" 2>/dev/null; then
+  cat > "$HOOK_FILE" << 'HOOKEOF'
+#!/bin/bash
+# secret-scan: block commits containing likely secrets
+if git diff --cached --diff-filter=ACM -z --name-only | \
+   xargs -0 grep -lE "(sk-ant-|eyJhbGc|AKIA[A-Z0-9]{16}|ghp_|glpat-|BEGIN OPENSSH PRIVATE KEY)" 2>/dev/null; then
+  echo "ERROR: Staged files may contain secrets. Aborting commit."
+  echo "If this is intentional, use: git commit --no-verify"
+  exit 1
+fi
+HOOKEOF
+  chmod +x "$HOOK_FILE"
+  echo "  Pre-commit hook installed."
+else
+  echo "  Pre-commit hook already exists."
 fi
 
 # ── macOS System Preferences ──
@@ -204,7 +225,7 @@ defaults write com.apple.Siri StatusMenuVisible -bool false
 
 # -- Screenshots --
 mkdir -p ~/Pictures/Screenshot
-defaults write com.apple.screencapture location -string "~/Pictures/Screenshot"
+defaults write com.apple.screencapture location -string "$HOME/Pictures/Screenshot"
 defaults write com.apple.screencapture disable-shadow -bool true
 
 # -- Menu bar clock --
@@ -283,9 +304,9 @@ verify "uv"                 command -v uv
 verify "mise"               command -v mise
 verify "colima"             command -v colima
 verify "terraform-docs"     command -v terraform-docs
-verify "gcloud"             command -v gcloud
+verify "gcloud"             test -x "$(brew --prefix)/share/google-cloud-sdk/bin/gcloud"
 verify "aws"                command -v aws
-verify "bun"                command -v bun
+verify "bun"                bash -c 'eval "$(mise activate bash)" && command -v bun'
 verify "go (mise)"          bash -c 'eval "$(mise activate bash)" && command -v go'
 verify "terraform (mise)"   bash -c 'eval "$(mise activate bash)" && command -v terraform'
 verify "atuin"              command -v atuin
@@ -344,9 +365,9 @@ echo ""
 echo "Stage 2 — Secrets (requires Bitwarden master password):"
 echo "  1. Restart terminal"
 echo "  2. Grant Accessibility permissions to Mos and Ghostty (settings window opened above)"
-echo "  3. Run './scripts/bw-setup.sh' to restore secrets and SSH keys"
+echo "  3. cd ~/Code/Github/config && ./scripts/bw-setup.sh"
 echo ""
 echo "Stage 3 — Services (requires Stage 2):"
-echo "  4. Run 'atuin login' (encryption key: grep ATUIN_KEY ~/.secrets | cut -d\"'\" -f2)"
-echo "  5. Run 'gh auth login' to authenticate GitHub CLI"
+echo "  4. gh auth login (select SSH — key is already on GitHub)"
+echo "  5. atuin login (encryption key: grep ATUIN_KEY ~/.secrets | cut -d\"'\" -f2)"
 echo "  6. Edit ~/.gitconfig — set user.name and user.email"

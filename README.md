@@ -38,12 +38,12 @@ cd config
 重開 terminal 後：
 
 1. 授予 Mos 和 Ghostty Accessibility 權限（setup.sh 會自動開啟設定視窗）
-2. 執行 `./scripts/bw-setup.sh` 從 Bitwarden 還原 secrets + SSH key
+2. `cd ~/Code/Github/config && ./scripts/bw-setup.sh`
 
 ### Stage 3 — 服務設定（需要 Stage 2 的 secrets/key）
 
-3. 執行 `atuin login`，encryption key 用：`grep ATUIN_KEY ~/.secrets | cut -d"'" -f2`
-4. 執行 `gh auth login` 登入 GitHub CLI
+3. `gh auth login` 登入 GitHub CLI（選 SSH protocol，key 已在 GitHub 上）
+4. `atuin login`，encryption key 用：`grep ATUIN_KEY ~/.secrets | cut -d"'" -f2`
 5. 編輯 `~/.gitconfig`，填入 `user.name` 和 `user.email`
 
 ### SSH Key
