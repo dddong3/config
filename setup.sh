@@ -103,14 +103,54 @@ fi
 ln -sf "$DOTFILES_DIR/claude/statusline-command.sh" ~/.claude/statusline-command.sh
 ln -sf "$DOTFILES_DIR/ssh/config" ~/.ssh/config
 
-# ── SSH key ──
+# ── SSH key (restore from Bitwarden or generate new) ──
 step "SSH key..."
+restore_ssh_keys() {
+  if [ -z "$BW_SESSION" ]; then
+    echo "  Bitwarden not unlocked, skipping key restore."
+    return 1
+  fi
+  local notes
+  notes=$(BW_SESSION="$BW_SESSION" bw get notes ssh-keys 2>/dev/null) || return 1
+  [ -z "$notes" ] && return 1
+
+  echo "$notes" | awk '/BEGIN OPENSSH/{c++} c==1{print; if(/END OPENSSH PRIVATE KEY/)exit}' > "$HOME/.ssh/id_ed25519"
+  echo "$notes" | awk '/ssh-ed25519.*dong3-code/{print}' > "$HOME/.ssh/id_ed25519.pub"
+  chmod 600 "$HOME/.ssh/id_ed25519"
+
+  echo "$notes" | awk '/BEGIN OPENSSH/{c++} c==2{print; if(/END OPENSSH PRIVATE KEY/)exit}' > "$HOME/.ssh/homelab"
+  echo "$notes" | awk '/ssh-ed25519.*dong3-homelab/{print}' > "$HOME/.ssh/homelab.pub"
+  chmod 600 "$HOME/.ssh/homelab"
+
+  echo "  SSH keys restored from Bitwarden."
+  return 0
+}
+
 if [ ! -f "$HOME/.ssh/id_ed25519" ]; then
-  ssh-keygen -t ed25519 -C "$(git config user.email 2>/dev/null || echo 'dotfiles-setup')" -f "$HOME/.ssh/id_ed25519" -N ""
-  echo "  SSH key generated. Add to GitHub after setup:"
-  echo "    gh ssh-key add ~/.ssh/id_ed25519.pub --title \"$(hostname)\""
+  # Try restore from Bitwarden first, fall back to generating new keys
+  if ! restore_ssh_keys; then
+    echo "  Generating new SSH keys..."
+    ssh-keygen -t ed25519 -C "dong3-code" -f "$HOME/.ssh/id_ed25519" -N ""
+    ssh-keygen -t ed25519 -C "dong3-homelab" -f "$HOME/.ssh/homelab" -N ""
+  fi
 else
-  echo "  SSH key already exists."
+  echo "  SSH keys already exist."
+fi
+# Add to macOS Keychain
+ssh-add --apple-use-keychain ~/.ssh/id_ed25519 2>/dev/null
+ssh-add --apple-use-keychain ~/.ssh/homelab 2>/dev/null
+# Upload to GitHub (requires gh auth login first)
+if command -v gh &>/dev/null && gh auth status &>/dev/null; then
+  KEY_TITLE="$(scutil --get ComputerName 2>/dev/null || hostname)-ed25519"
+  if ! gh ssh-key list 2>/dev/null | grep -q "$(cat ~/.ssh/id_ed25519.pub | awk '{print $2}')"; then
+    gh ssh-key add ~/.ssh/id_ed25519.pub --title "$KEY_TITLE"
+    echo "  SSH key added to GitHub as '$KEY_TITLE'."
+  else
+    echo "  SSH key already on GitHub."
+  fi
+else
+  echo "  GitHub CLI not authenticated. Run 'gh auth login' then:"
+  echo "    gh ssh-key add ~/.ssh/id_ed25519.pub --title \"$(hostname)-ed25519\""
 fi
 
 step "Claude Code settings..."
@@ -194,8 +234,7 @@ echo "Next steps:"
 echo "  1. Restart terminal"
 echo "  2. Run 'bw-setup-secrets' to pull secrets from Vaultwarden"
 echo "  3. Run 'atuin login' to sync shell history"
-echo "  4. Run 'gh auth login' to authenticate GitHub CLI"
-echo "  5. Run 'gh ssh-key add ~/.ssh/id_ed25519.pub --title \"$(hostname)\"' to add SSH key to GitHub"
-echo "  6. mise use -g go terraform terraform-docs gcloud"
+echo "  4. Run 'gh auth login' then rerun ./setup.sh to auto-upload SSH key"
+echo "  5. mise use -g go terraform terraform-docs gcloud"
 echo "  7. Edit ~/.claude/settings.json to replace ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN"
 echo "  8. Edit ~/.gitconfig to set user.name and user.email"
