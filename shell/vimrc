@@ -1,25 +1,56 @@
+set nocompatible
 syntax on
 set t_Co=256
+set encoding=utf-8
+
+" -- Display --
 set number
-set tabstop=2 softtabstop=2 shiftwidth=2
-set list listchars=tab:\:\ ,trail:·,extends:?,precedes:?,nbsp:×
-set ai
-set nowrap
-set ruler
-set hlsearch
+set relativenumber
 set cursorline
-set mouse=a
-hi LineNr cterm=bold ctermfg=DarkGrey ctermbg=NONE
-hi CursorLineNr cterm=bold ctermfg=Green ctermbg=NONE
-set nocompatible
-set backspace=indent,eol,start
+set ruler
 set showcmd
 set showmatch
-set ignorecase
-set smartcase 
+set signcolumn=yes
+set scrolloff=8
+set sidescrolloff=8
+set nowrap
+
+" -- Indentation --
+set tabstop=2 softtabstop=2 shiftwidth=2
+set expandtab
+set ai
+
+" -- Search --
+set hlsearch
 set incsearch
+set ignorecase
+set smartcase
+set wildmenu
+set wildmode=longest:full,full
+
+" -- Behavior --
+set mouse=a
+set hidden
 set autowrite
-set hidden 
+set backspace=indent,eol,start
+set clipboard=unnamedplus
+set splitright
+set splitbelow
+set updatetime=300
+set undofile
 
+" -- Whitespace characters --
+set list listchars=tab:\:\ ,trail:·,extends:?,precedes:?,nbsp:×
+
+" -- Colors --
+hi LineNr cterm=bold ctermfg=DarkGrey ctermbg=NONE
+hi CursorLineNr cterm=bold ctermfg=Green ctermbg=NONE
+
+" -- Key mappings --
 nnoremap Q <ESC>:q<CR>
-
+nnoremap <Space> :
+nnoremap <Esc><Esc> :noh<CR>
+nnoremap j gj
+nnoremap k gk
+vnoremap < <gv
+vnoremap > >gv
