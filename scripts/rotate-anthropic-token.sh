@@ -22,16 +22,7 @@ if [ -f ~/.secrets ]; then
   echo "  ~/.secrets updated."
 fi
 
-# Update ~/.claude/settings.json
-if [ -f ~/.claude/settings.json ]; then
-  OLD_TOKEN=$(grep ANTHROPIC_AUTH_TOKEN ~/.claude/settings.json | sed 's/.*: *"\(.*\)".*/\1/')
-  sed -i '' "s|$OLD_TOKEN|$NEW_TOKEN|" ~/.claude/settings.json
-  if [ -n "$NEW_URL" ]; then
-    OLD_URL=$(grep ANTHROPIC_BASE_URL ~/.claude/settings.json | sed 's/.*: *"\(.*\)".*/\1/')
-    sed -i '' "s|$OLD_URL|$NEW_URL|" ~/.claude/settings.json
-  fi
-  echo "  ~/.claude/settings.json updated."
-fi
+# Note: settings.json uses apiKeyHelper to read from ~/.secrets, no need to update it
 
 # Update Bitwarden
 echo ""
