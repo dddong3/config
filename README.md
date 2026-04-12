@@ -23,6 +23,8 @@ macOS 開發環境設定檔備份與新環境建置指南。
 
 ### Stage 1 — 基礎安裝（不需任何認證）
 
+新 Mac 第一次跑 `git` 會提示安裝 Xcode Command Line Tools，同意安裝後再繼續。
+
 ```bash
 git clone https://github.com/dddong3/config.git
 cd config
@@ -40,7 +42,7 @@ cd config
 
 ### Stage 3 — 服務設定（需要 Stage 2 的 secrets/key）
 
-3. 執行 `atuin login` 同步 shell 歷史
+3. 執行 `atuin login`，encryption key 用：`grep ATUIN_KEY ~/.secrets | cut -d"'" -f2`
 4. 執行 `gh auth login` 登入 GitHub CLI
 5. 編輯 `~/.gitconfig`，填入 `user.name` 和 `user.email`
 

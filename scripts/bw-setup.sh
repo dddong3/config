@@ -12,8 +12,11 @@ echo ""
 # ── Login ──
 read -rp "Vaultwarden URL: " BW_SERVER_URL
 bw config server "$BW_SERVER_URL"
-bw login --check &>/dev/null || bw login || { echo "Error: bw login failed."; exit 1; }
-BW_SESSION=$(bw unlock --raw)
+if bw login --check &>/dev/null; then
+  BW_SESSION=$(bw unlock --raw)
+else
+  BW_SESSION=$(bw login --raw)
+fi
 export BW_SESSION
 
 # ── 1. Secrets ──
@@ -59,7 +62,8 @@ done
 echo "  SSH keys restored."
 
 # ── 3. Add to Keychain ──
-echo "[3] Adding SSH keys to Keychain (enter passphrase when prompted)..."
+echo "[3] Adding SSH keys to Keychain..."
+echo "  Enter the SSH key passphrase you set when generating the key."
 ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 ssh-add --apple-use-keychain ~/.ssh/homelab
 

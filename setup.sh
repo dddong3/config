@@ -347,6 +347,6 @@ echo "  2. Grant Accessibility permissions to Mos and Ghostty (settings window o
 echo "  3. Run './scripts/bw-setup.sh' to restore secrets and SSH keys"
 echo ""
 echo "Stage 3 — Services (requires Stage 2):"
-echo "  4. Run 'atuin login' to sync shell history"
+echo "  4. Run 'atuin login' (encryption key: grep ATUIN_KEY ~/.secrets | cut -d\"'\" -f2)"
 echo "  5. Run 'gh auth login' to authenticate GitHub CLI"
 echo "  6. Edit ~/.gitconfig — set user.name and user.email"
