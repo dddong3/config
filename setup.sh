@@ -41,6 +41,10 @@ step "Installing terminal & shell tools..."
 brew install --cask ghostty || echo "Warning: ghostty install failed (non-critical)"
 brew install zsh zsh-syntax-highlighting zsh-completions zoxide fzf chroma starship || echo "Warning: some shell packages failed to install"
 
+# Fix insecure directories for compinit
+chmod go-w "$(brew --prefix)/share" 2>/dev/null
+chmod -R go-w "$(brew --prefix)/share/zsh" 2>/dev/null
+
 # Set Homebrew zsh as default shell
 BREW_ZSH="$(brew --prefix)/bin/zsh"
 if [ -x "$BREW_ZSH" ]; then
@@ -48,8 +52,12 @@ if [ -x "$BREW_ZSH" ]; then
     echo "$BREW_ZSH" | sudo tee -a /etc/shells
   fi
   if [ "$SHELL" != "$BREW_ZSH" ]; then
-    echo "  Changing default shell to brew zsh (requires login password)..."
-    chsh -s "$BREW_ZSH" || echo "Warning: chsh failed (run manually: chsh -s $BREW_ZSH)"
+    echo "  Changing default shell to brew zsh..."
+    if sudo -n true 2>/dev/null; then
+      sudo chsh -s "$BREW_ZSH" "$USER"
+    else
+      chsh -s "$BREW_ZSH" || echo "  Warning: chsh failed (run manually: chsh -s $BREW_ZSH)"
+    fi
   fi
 fi
 
@@ -130,16 +138,23 @@ if [ ! -f "$HOME/.ssh/id_ed25519" ]; then
   # Try restore from Bitwarden first, fall back to generating new keys
   if ! restore_ssh_keys; then
     echo "  Generating new SSH keys..."
-    ssh-keygen -t ed25519 -C "dong3-code" -f "$HOME/.ssh/id_ed25519" -N ""
-    ssh-keygen -t ed25519 -C "dong3-homelab" -f "$HOME/.ssh/homelab" -N ""
+    if [ -n "${SSH_PASSPHRASE_CODE+x}" ]; then
+      ssh-keygen -t ed25519 -C "dong3-code" -f "$HOME/.ssh/id_ed25519" -N "$SSH_PASSPHRASE_CODE"
+    else
+      ssh-keygen -t ed25519 -C "dong3-code" -f "$HOME/.ssh/id_ed25519"
+    fi
+    if [ -n "${SSH_PASSPHRASE_HOMELAB+x}" ]; then
+      ssh-keygen -t ed25519 -C "dong3-homelab" -f "$HOME/.ssh/homelab" -N "$SSH_PASSPHRASE_HOMELAB"
+    else
+      ssh-keygen -t ed25519 -C "dong3-homelab" -f "$HOME/.ssh/homelab"
+    fi
   fi
 else
   echo "  SSH keys already exist."
 fi
-# Add to macOS Keychain (will prompt for passphrase)
-echo "  Adding SSH keys to Keychain (enter passphrase when prompted)..."
-ssh-add --apple-use-keychain ~/.ssh/id_ed25519
-ssh-add --apple-use-keychain ~/.ssh/homelab
+# Add to macOS Keychain
+ssh-add --apple-use-keychain ~/.ssh/id_ed25519 2>/dev/null || echo "  Warning: could not add id_ed25519 to Keychain (run manually: ssh-add --apple-use-keychain ~/.ssh/id_ed25519)"
+ssh-add --apple-use-keychain ~/.ssh/homelab 2>/dev/null || echo "  Warning: could not add homelab key to Keychain (run manually: ssh-add --apple-use-keychain ~/.ssh/homelab)"
 # Upload to GitHub (requires gh auth login first)
 if command -v gh &>/dev/null && gh auth status &>/dev/null; then
   KEY_TITLE="$(scutil --get ComputerName 2>/dev/null || hostname)-ed25519"
