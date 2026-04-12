@@ -136,9 +136,10 @@ if [ ! -f "$HOME/.ssh/id_ed25519" ]; then
 else
   echo "  SSH keys already exist."
 fi
-# Add to macOS Keychain
-ssh-add --apple-use-keychain ~/.ssh/id_ed25519 2>/dev/null
-ssh-add --apple-use-keychain ~/.ssh/homelab 2>/dev/null
+# Add to macOS Keychain (will prompt for passphrase)
+echo "  Adding SSH keys to Keychain (enter passphrase when prompted)..."
+ssh-add --apple-use-keychain ~/.ssh/id_ed25519
+ssh-add --apple-use-keychain ~/.ssh/homelab
 # Upload to GitHub (requires gh auth login first)
 if command -v gh &>/dev/null && gh auth status &>/dev/null; then
   KEY_TITLE="$(scutil --get ComputerName 2>/dev/null || hostname)-ed25519"
