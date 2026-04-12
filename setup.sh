@@ -56,7 +56,7 @@ brew install colima mise || echo "Warning: some packages failed to install"
 
 # ── 6. IME & Apps ──
 step "Installing apps..."
-brew install --cask squirrel arc || echo "Warning: some app installs failed (non-critical)"
+brew install --cask squirrel arc visual-studio-code || echo "Warning: some app installs failed (non-critical)"
 
 # ── 7. Oh My Zsh ──
 step "Installing Oh My Zsh..."
