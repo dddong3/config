@@ -42,7 +42,7 @@ if [ -x "$BREW_ZSH" ]; then
     echo "$BREW_ZSH" | sudo tee -a /etc/shells
   fi
   if [ "$SHELL" != "$BREW_ZSH" ]; then
-    chsh -s "$BREW_ZSH"
+    chsh -s "$BREW_ZSH" || echo "Warning: chsh failed (run manually: chsh -s $BREW_ZSH)"
   fi
 fi
 
