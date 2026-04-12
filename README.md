@@ -111,7 +111,7 @@ bw status
 
 在 Bitwarden 建一個 **Secure Note**（名稱：`dotfiles-secrets`），內容放環境變數：
 ```bash
-export HISHTORY_S3_SECRET_ACCESS_KEY='your-key-here'
+export YOUR_SECRET_KEY='your-value-here'
 ```
 
 zshrc 中提供 `bw-setup-secrets` 指令，執行一次即可從 Vaultwarden 拉取 secrets 並存入 `~/.secrets`。

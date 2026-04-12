@@ -6,8 +6,8 @@ set -eo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-STEP=0; TOTAL=10
-step() { STEP=$((STEP+1)); echo "[$STEP/$TOTAL] $1"; }
+STEP=0
+step() { STEP=$((STEP+1)); echo "[$STEP] $1"; }
 
 echo "=== macOS Development Environment Setup ==="
 echo ""
@@ -33,7 +33,7 @@ brew install --cask font-maple-mono-nf-cn || echo "Warning: font install failed 
 # ── 3. Terminal & Shell ──
 step "Installing terminal & shell tools..."
 brew install --cask ghostty || echo "Warning: ghostty install failed (non-critical)"
-brew install zsh zsh-syntax-highlighting zsh-completions zoxide fzf chroma starship || echo "Warning: some shell packages failed to install"
+brew install zsh zsh-syntax-highlighting zsh-completions zoxide fzf chroma starship
 
 # Set Homebrew zsh as default shell
 BREW_ZSH="$(brew --prefix)/bin/zsh"
@@ -100,44 +100,53 @@ echo ""
 echo "=== Verification ==="
 PASS=0; FAIL=0
 verify() {
-  if eval "$2" &>/dev/null; then
-    echo "  ✓ $1"
+  local label="$1"; shift
+  if "$@" &>/dev/null; then
+    echo "  ✓ $label"
     PASS=$((PASS+1))
   else
-    echo "  ✗ $1"
+    echo "  ✗ $label"
     FAIL=$((FAIL+1))
   fi
 }
 
 # Commands
-verify "Homebrew"           "command -v brew"
-verify "zsh (brew)"         "[ -x $(brew --prefix)/bin/zsh ]"
-verify "Starship"           "command -v starship"
-verify "Ghostty"            "[ -d /Applications/Ghostty.app ]"
-verify "Oh My Zsh"          "[ -d $HOME/.oh-my-zsh ]"
-verify "zoxide"             "command -v zoxide"
-verify "fzf"                "command -v fzf"
-verify "jq"                 "command -v jq"
-verify "gh"                 "command -v gh"
-verify "uv"                 "command -v uv"
-verify "mise"               "command -v mise"
-verify "colima"             "command -v colima"
-verify "atuin"              "command -v atuin"
-verify "Bitwarden CLI"      "command -v bw"
-verify "VS Code"            "[ -d '/Applications/Visual Studio Code.app' ]"
+verify "Homebrew"           command -v brew
+verify "zsh (brew)"         test -x "$(brew --prefix)/bin/zsh"
+verify "Starship"           command -v starship
+verify "Ghostty"            test -d /Applications/Ghostty.app
+verify "Oh My Zsh"          test -d "$HOME/.oh-my-zsh"
+verify "zoxide"             command -v zoxide
+verify "fzf"                command -v fzf
+verify "jq"                 command -v jq
+verify "gh"                 command -v gh
+verify "uv"                 command -v uv
+verify "mise"               command -v mise
+verify "colima"             command -v colima
+verify "atuin"              command -v atuin
+verify "Bitwarden CLI"      command -v bw
+verify "helm"               command -v helm
+verify "viddy"              command -v viddy
+verify "ccat"               command -v ccat
+verify "chroma"             command -v chroma
+verify "bind (dig)"         command -v dig
+verify "VS Code"            test -d "/Applications/Visual Studio Code.app"
+verify "Squirrel (RIME)"    test -d /Applications/Squirrel.app
+verify "Arc"                test -d /Applications/Arc.app
 
 # Config files (symlinks)
-verify "~/.zshrc"           "[ -L $HOME/.zshrc ]"
-verify "~/.vimrc"           "[ -L $HOME/.vimrc ]"
-verify "starship.toml"      "[ -L $HOME/.config/starship.toml ]"
-verify "ghostty.conf"       "[ -L \"$HOME/Library/Application Support/com.mitchellh.ghostty/config\" ]"
-verify "vscode settings"    "[ -L \"$HOME/Library/Application Support/Code/User/settings.json\" ]"
-verify "gitconfig"          "[ -L $HOME/.gitconfig ]"
-verify "statusline script"  "[ -L $HOME/.claude/statusline-command.sh ]"
-verify "claude settings"    "[ -f $HOME/.claude/settings.json ]"
+verify "~/.zshrc"           test -L "$HOME/.zshrc"
+verify "~/.vimrc"           test -L "$HOME/.vimrc"
+verify "starship.toml"      test -L "$HOME/.config/starship.toml"
+verify "ghostty.conf"       test -L "$HOME/Library/Application Support/com.mitchellh.ghostty/config"
+verify "vscode settings"    test -L "$HOME/Library/Application Support/Code/User/settings.json"
+verify "rime config"        test -L "$HOME/Library/Rime/bopomofo.custom.yaml"
+verify "gitconfig"          test -L "$HOME/.gitconfig"
+verify "statusline script"  test -L "$HOME/.claude/statusline-command.sh"
+verify "claude settings"    test -f "$HOME/.claude/settings.json"
 
-# Font
-verify "Maple Mono NF CN"   "fc-list | grep -q 'Maple Mono NF CN'"
+# Font (macOS native check)
+verify "Maple Mono NF CN"   bash -c 'system_profiler SPFontsDataType 2>/dev/null | grep -q "Maple Mono NF CN"'
 
 echo ""
 echo "Result: $PASS passed, $FAIL failed"

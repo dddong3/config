@@ -42,7 +42,7 @@ fi
 bw-setup-secrets() {
   command -v bw &>/dev/null || { echo "Install first: brew install bitwarden-cli"; return 1; }
   bw config server https://***REMOVED***
-  bw login 2>/dev/null || true
+  bw login || true
   local BW_SESSION
   BW_SESSION=$(bw unlock --raw)
   local tmp
@@ -67,8 +67,7 @@ export ZSH_COLORIZE_TOOL=chroma
 # Disable default ctrl+R (use atuin instead)
 bindkey -r '^R'
 
-# Atuin (shell history sync)
-[ -f "$HOME/.atuin/bin/env" ] && . "$HOME/.atuin/bin/env"
+# Atuin (shell history sync, installed via brew)
 command -v atuin &>/dev/null && eval "$(atuin init zsh)"
 
 # Aliases
