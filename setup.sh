@@ -180,11 +180,26 @@ fi
 # ── macOS System Preferences ──
 step "Configuring macOS system preferences..."
 
+# -- General UI --
+defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
+defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true
+defaults write NSGlobalDomain PMPrintingExpandedStateForPrint -bool true
+defaults write NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true
+defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
+defaults write com.apple.LaunchServices LSQuarantine -bool false
+
 # -- Dock --
 defaults write com.apple.dock tilesize -int 54
 defaults write com.apple.dock autohide -bool true
+defaults write com.apple.dock autohide-delay -float 0
+defaults write com.apple.dock autohide-time-modifier -float 0
 defaults write com.apple.dock mineffect -string "scale"
 defaults write com.apple.dock show-recents -bool false
+defaults write com.apple.dock mru-spaces -bool false
+# Dock folders (Downloads etc): sort by name, display as stack, view as grid
+/usr/libexec/PlistBuddy -c "Set :persistent-others:0:tile-data:arrangement 1" ~/Library/Preferences/com.apple.dock.plist 2>/dev/null || true
+/usr/libexec/PlistBuddy -c "Set :persistent-others:0:tile-data:displayas 0" ~/Library/Preferences/com.apple.dock.plist 2>/dev/null || true
+/usr/libexec/PlistBuddy -c "Set :persistent-others:0:tile-data:showas 2" ~/Library/Preferences/com.apple.dock.plist 2>/dev/null || true
 
 # -- Finder --
 defaults write com.apple.finder ShowPathbar -bool true
@@ -193,14 +208,22 @@ defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 defaults write com.apple.finder _FXSortFoldersFirst -bool true
 defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
 defaults write com.apple.finder ShowHardDrivesOnDesktop -bool false
+defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
+defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
+defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
+chflags nohidden ~/Library 2>/dev/null || true
 
 # -- Keyboard --
 defaults write NSGlobalDomain KeyRepeat -int 1
+defaults write NSGlobalDomain InitialKeyRepeat -int 10
+defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
 defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
 defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
 defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
 defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
 defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
+defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
 defaults write com.apple.HIToolbox AppleFnUsageType -int 0
 
 # -- Trackpad --
@@ -209,9 +232,12 @@ defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool t
 defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
 defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag -bool true
 
-# -- Appearance --
+# -- Window & Appearance --
 defaults write NSGlobalDomain AppleInterfaceStyle -string "Dark"
 defaults write com.apple.WindowManager EnableTiledWindowMargins -bool false
+defaults write NSGlobalDomain AppleMiniaturizeOnDoubleClick -bool false
+defaults write NSGlobalDomain AppleICUForce24HourTime -bool true
+
 
 # -- Siri --
 defaults write com.apple.Siri StatusMenuVisible -bool false
@@ -219,6 +245,7 @@ defaults write com.apple.Siri StatusMenuVisible -bool false
 # -- Screenshots --
 mkdir -p ~/Pictures/Screenshot
 defaults write com.apple.screencapture location -string "~/Pictures/Screenshot"
+defaults write com.apple.screencapture disable-shadow -bool true
 
 # -- Menu bar clock --
 defaults write com.apple.menuextra.clock ShowDate -int 0
@@ -226,13 +253,11 @@ defaults write com.apple.menuextra.clock ShowDayOfWeek -bool true
 defaults write com.apple.menuextra.clock ShowAMPM -bool true
 defaults write com.apple.menuextra.clock ShowSeconds -bool false
 
-# -- Menu bar items (hide from menu bar, keep in Control Center) --
-defaults write com.apple.controlcenter "NSStatusItem Visible WiFi" -bool false
-defaults write com.apple.controlcenter "NSStatusItem Visible Sound" -bool false
-defaults write com.apple.controlcenter "NSStatusItem Visible Battery" -bool false
-defaults write com.apple.controlcenter "NSStatusItem Visible FocusModes" -bool false
-defaults write com.apple.controlcenter "NSStatusItem Visible NowPlaying" -bool false
-defaults write com.apple.controlcenter "NSStatusItem Visible ScreenMirroring" -bool false
+# -- Menu bar / Control Center --
+# Note: macOS Sequoia Control Center visibility cannot be reliably set via defaults write.
+# Configure manually: System Settings → Control Center
+#   Don't Show: Wi-Fi, Bluetooth, AirDrop, Stage Manager
+#   Show When Active: Focus, Screen Mirroring, Display, Sound, Now Playing
 
 # -- Default browser --
 if command -v defaultbrowser &>/dev/null; then
@@ -241,6 +266,10 @@ fi
 
 # -- TextEdit --
 defaults write com.apple.TextEdit RichText -bool false
+
+# -- Security --
+defaults write com.apple.screensaver askForPassword -int 1
+defaults write com.apple.screensaver askForPasswordDelay -int 0
 
 # -- Display sleep --
 sudo pmset -a displaysleep 120 2>/dev/null || true
@@ -251,6 +280,12 @@ defaults write NSGlobalDomain AppleLocale -string "en_TW"
 
 # -- Timezone --
 sudo systemsetup -settimezone "Asia/Taipei" 2>/dev/null || true
+
+# -- Photos --
+defaults -currentHost write com.apple.ImageCapture disableHotPlug -bool true
+
+# -- Time Machine --
+defaults write com.apple.TimeMachine DoNotOfferNewDisksForBackup -bool true
 
 # Restart affected apps
 killall Dock 2>/dev/null || true
