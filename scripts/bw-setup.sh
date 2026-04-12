@@ -67,14 +67,15 @@ echo "  Enter the SSH key passphrase you set when generating the key."
 ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 ssh-add --apple-use-keychain ~/.ssh/homelab
 
-# ── 4. Update Claude Code settings (BASE_URL only, token uses apiKeyHelper) ──
+# ── 4. Update Claude Code settings ──
 echo "[4] Updating Claude Code settings..."
 source ~/.secrets
-if [ -f ~/.claude/settings.json ] && [ -n "$ANTHROPIC_BASE_URL" ]; then
+if [ -f ~/.claude/settings.json ] && [ -n "$ANTHROPIC_BASE_URL" ] && [ -n "$ANTHROPIC_AUTH_TOKEN" ]; then
   sed -i '' "s|<your-api-base-url>|$ANTHROPIC_BASE_URL|" ~/.claude/settings.json
-  echo "  ANTHROPIC_BASE_URL updated."
+  sed -i '' "s|<your-auth-token>|$ANTHROPIC_AUTH_TOKEN|" ~/.claude/settings.json
+  echo "  Claude Code settings updated."
 else
-  echo "  Skipped."
+  echo "  Skipped (settings.json or tokens not found)."
 fi
 
 # ── Done ──
