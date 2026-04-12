@@ -180,6 +180,7 @@ else
   echo "    gh ssh-key add ~/.ssh/id_ed25519.pub --title \"$(hostname)-ed25519\""
 fi
 
+# claude/settings.json uses cp (not symlink) — contains placeholder tokens that need manual replacement
 step "Claude Code settings..."
 if [ ! -f ~/.claude/settings.json ]; then
   cp "$DOTFILES_DIR/claude/settings.json" ~/.claude/settings.json
