@@ -102,7 +102,7 @@ atuin key
 ### 7. Bitwarden CLI（Secrets 管理）
 
 ```bash
-brew install bitwarden-cli
+# bitwarden-cli 已在步驟 4 安裝
 
 # 設定 self-hosted Vaultwarden
 bw config server https://***REMOVED***
@@ -160,7 +160,7 @@ ZSH_COLORIZE_CHROMA_FORMATTER=terminal256
 如果不使用 `setup.sh`，可手動複製：
 
 ```bash
-mkdir -p ~/.config ~/Library/Rime ~/Library/Application\ Support/com.mitchellh.ghostty
+mkdir -p ~/.config ~/Library/Rime ~/Library/Application\ Support/com.mitchellh.ghostty ~/Library/Application\ Support/Code/User
 
 cp shell/zshrc ~/.zshrc
 cp shell/vimrc ~/.vimrc
