@@ -6,7 +6,7 @@ set -eo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-STEP=0; TOTAL=9
+STEP=0; TOTAL=10
 step() { STEP=$((STEP+1)); echo "[$STEP/$TOTAL] $1"; }
 
 echo "=== macOS Development Environment Setup ==="
@@ -56,9 +56,12 @@ brew install colima mise || echo "Warning: some packages failed to install"
 
 # ── 6. IME & Apps ──
 step "Installing apps..."
-brew install --cask squirrel arc visual-studio-code || echo "Warning: some app installs failed (non-critical)"
+brew install --cask squirrel arc visual-studio-code obsidian bitwarden mos spotify claude claude-code || true
 
-# ── 7. Oh My Zsh ──
+# ── 7. Brew auto-update ──
+step "Configuring brew auto-update..."
+brew autoupdate start 43200 --upgrade --cleanup || echo "Warning: brew autoupdate setup failed"
+
 step "Installing Oh My Zsh..."
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
   RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
@@ -66,7 +69,7 @@ else
   echo "  Oh My Zsh already installed."
 fi
 
-# ── 8. Deploy config files (symlink) ──
+# Deploy config files (symlink)
 # Note: must run AFTER Oh My Zsh install, because omz creates a default ~/.zshrc
 step "Deploying config files (symlink)..."
 mkdir -p ~/.config
@@ -84,7 +87,6 @@ ln -sf "$DOTFILES_DIR/ime/rime/bopomofo.custom.yaml" ~/Library/Rime/bopomofo.cus
 ln -sf "$DOTFILES_DIR/git/gitconfig" ~/.gitconfig
 ln -sf "$DOTFILES_DIR/claude/statusline-command.sh" ~/.claude/statusline-command.sh
 
-# ── 9. Deploy Claude Code settings ──
 step "Claude Code settings..."
 if [ ! -f ~/.claude/settings.json ]; then
   cp "$DOTFILES_DIR/claude/settings.json" ~/.claude/settings.json
