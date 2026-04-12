@@ -12,6 +12,12 @@ step() { STEP=$((STEP+1)); echo "[$STEP] $1"; }
 echo "=== macOS Development Environment Setup ==="
 echo ""
 
+# Network check
+if ! curl -fsS --connect-timeout 5 https://github.com -o /dev/null 2>/dev/null; then
+  echo "Error: No network connection. Please connect to the internet and try again."
+  exit 1
+fi
+
 # ── 1. Homebrew ──
 if ! command -v brew &>/dev/null; then
   step "Installing Homebrew..."
@@ -33,7 +39,7 @@ brew install --cask font-maple-mono-nf-cn || echo "Warning: font install failed 
 # ── 3. Terminal & Shell ──
 step "Installing terminal & shell tools..."
 brew install --cask ghostty || echo "Warning: ghostty install failed (non-critical)"
-brew install zsh zsh-syntax-highlighting zsh-completions zoxide fzf chroma starship
+brew install zsh zsh-syntax-highlighting zsh-completions zoxide fzf chroma starship || echo "Warning: some shell packages failed to install"
 
 # Set Homebrew zsh as default shell
 BREW_ZSH="$(brew --prefix)/bin/zsh"
@@ -42,6 +48,7 @@ if [ -x "$BREW_ZSH" ]; then
     echo "$BREW_ZSH" | sudo tee -a /etc/shells
   fi
   if [ "$SHELL" != "$BREW_ZSH" ]; then
+    echo "  Changing default shell to brew zsh (requires login password)..."
     chsh -s "$BREW_ZSH" || echo "Warning: chsh failed (run manually: chsh -s $BREW_ZSH)"
   fi
 fi
@@ -60,6 +67,7 @@ brew install --cask squirrel arc visual-studio-code obsidian bitwarden mos spoti
 
 # ── 7. Brew auto-update ──
 step "Configuring brew auto-update..."
+brew tap homebrew/autoupdate 2>/dev/null || true
 brew autoupdate start 43200 --upgrade --cleanup || echo "Warning: brew autoupdate setup failed"
 
 step "Installing Oh My Zsh..."
@@ -84,8 +92,23 @@ ln -sf "$DOTFILES_DIR/prompt/starship.toml" ~/.config/starship.toml
 ln -sf "$DOTFILES_DIR/terminal/ghostty.conf" ~/Library/Application\ Support/com.mitchellh.ghostty/config
 ln -sf "$DOTFILES_DIR/editor/vscode-settings.json" ~/Library/Application\ Support/Code/User/settings.json
 ln -sf "$DOTFILES_DIR/ime/rime/bopomofo.custom.yaml" ~/Library/Rime/bopomofo.custom.yaml
-ln -sf "$DOTFILES_DIR/git/gitconfig" ~/.gitconfig
+# gitconfig uses cp (not symlink) — user edits name/email locally
+if [ ! -f ~/.gitconfig ]; then
+  cp "$DOTFILES_DIR/git/gitconfig" ~/.gitconfig
+else
+  echo "  ~/.gitconfig already exists, skipping."
+fi
 ln -sf "$DOTFILES_DIR/claude/statusline-command.sh" ~/.claude/statusline-command.sh
+
+# ── SSH key ──
+step "SSH key..."
+if [ ! -f "$HOME/.ssh/id_ed25519" ]; then
+  ssh-keygen -t ed25519 -C "$(git config user.email 2>/dev/null || echo 'dotfiles-setup')" -f "$HOME/.ssh/id_ed25519" -N ""
+  echo "  SSH key generated. Add to GitHub after setup:"
+  echo "    gh ssh-key add ~/.ssh/id_ed25519.pub --title \"$(hostname)\""
+else
+  echo "  SSH key already exists."
+fi
 
 step "Claude Code settings..."
 if [ ! -f ~/.claude/settings.json ]; then
@@ -133,6 +156,14 @@ verify "bind (dig)"         command -v dig
 verify "VS Code"            test -d "/Applications/Visual Studio Code.app"
 verify "Squirrel (RIME)"    test -d /Applications/Squirrel.app
 verify "Arc"                test -d /Applications/Arc.app
+verify "Obsidian"           test -d /Applications/Obsidian.app
+verify "Bitwarden (GUI)"    test -d /Applications/Bitwarden.app
+verify "Mos"                test -d /Applications/Mos.app
+verify "Spotify"            test -d /Applications/Spotify.app
+verify "Claude"             test -d /Applications/Claude.app
+verify "Claude Code"        test -d "/Applications/Claude Code.app"
+verify "zsh-syntax-hl"      test -f "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+verify "zsh-completions"    test -d "$(brew --prefix)/share/zsh-completions"
 
 # Config files (symlinks)
 verify "~/.zshrc"           test -L "$HOME/.zshrc"
@@ -141,7 +172,8 @@ verify "starship.toml"      test -L "$HOME/.config/starship.toml"
 verify "ghostty.conf"       test -L "$HOME/Library/Application Support/com.mitchellh.ghostty/config"
 verify "vscode settings"    test -L "$HOME/Library/Application Support/Code/User/settings.json"
 verify "rime config"        test -L "$HOME/Library/Rime/bopomofo.custom.yaml"
-verify "gitconfig"          test -L "$HOME/.gitconfig"
+verify "gitconfig"          test -f "$HOME/.gitconfig"
+verify "SSH key"            test -f "$HOME/.ssh/id_ed25519"
 verify "statusline script"  test -L "$HOME/.claude/statusline-command.sh"
 verify "claude settings"    test -f "$HOME/.claude/settings.json"
 
@@ -158,6 +190,8 @@ echo "Next steps:"
 echo "  1. Restart terminal"
 echo "  2. Run 'bw-setup-secrets' to pull secrets from Vaultwarden"
 echo "  3. Run 'atuin login' to sync shell history"
-echo "  4. mise use -g go terraform terraform-docs gcloud"
-echo "  5. Edit ~/.claude/settings.json to replace ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN"
-echo "  6. Edit ~/.gitconfig to set user.name and user.email"
+echo "  4. Run 'gh auth login' to authenticate GitHub CLI"
+echo "  5. Run 'gh ssh-key add ~/.ssh/id_ed25519.pub --title \"$(hostname)\"' to add SSH key to GitHub"
+echo "  6. mise use -g go terraform terraform-docs gcloud"
+echo "  7. Edit ~/.claude/settings.json to replace ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN"
+echo "  8. Edit ~/.gitconfig to set user.name and user.email"

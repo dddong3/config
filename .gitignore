@@ -1,3 +1,15 @@
 .DS_Store
 .secrets
 .claude/
+
+# Sensitive files
+*.pem
+*.key
+*.p12
+id_rsa*
+id_ed25519
+.env
+.env.*
+
+# SSH private keys backup
+ssh/backup/

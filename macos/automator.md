@@ -33,13 +33,13 @@ Finder 會將選取的項目以參數形式傳入 shell：
 3. Shell Script 內容
 
 ```sh
-open -a "/Applications/Cursor.app" "$@"
+open -a "/Applications/Visual Studio Code.app" "$@"
 ```
 or
 
 ```sh
 for f in "$@"
 do
-  open -a "/Applications/Cursor.app" "$f"
+  open -a "/Applications/Visual Studio Code.app" "$f"
 done
 ```
