@@ -36,7 +36,7 @@ fi
 
 # ── 4. CLI tools ──
 echo "[4/8] Installing CLI tools..."
-brew install jq bind helm viddy bitwarden-cli uv ccat
+brew install jq bind helm viddy bitwarden-cli uv ccat gh
 
 # ── 5. Container & Version manager ──
 echo "[5/8] Installing container & version manager..."
