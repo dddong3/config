@@ -78,7 +78,14 @@ brew install jq bind helm viddy bitwarden-cli uv ccat gh atuin defaultbrowser ||
 
 # ── 5. Container & Version manager ──
 step "Installing container & version manager..."
-brew install colima mise || echo "Warning: some packages failed to install"
+brew install colima mise terraform-docs || echo "Warning: some packages failed to install"
+brew install --cask google-cloud-sdk || echo "Warning: gcloud install failed (non-critical)"
+brew install awscli || echo "Warning: awscli install failed (non-critical)"
+
+# Install runtimes via mise
+if command -v mise &>/dev/null; then
+  mise use -g go terraform bun || echo "Warning: some mise packages failed to install"
+fi
 
 # ── 6. IME & Apps ──
 step "Installing apps..."
@@ -277,6 +284,10 @@ verify "gh"                 command -v gh
 verify "uv"                 command -v uv
 verify "mise"               command -v mise
 verify "colima"             command -v colima
+verify "terraform-docs"     command -v terraform-docs
+verify "gcloud"             command -v gcloud
+verify "aws"                command -v aws
+verify "bun"                command -v bun
 verify "atuin"              command -v atuin
 verify "Bitwarden CLI"      command -v bw
 verify "helm"               command -v helm
@@ -338,6 +349,5 @@ echo ""
 echo "Stage 3 — Services (requires Stage 2):"
 echo "  4. Run 'atuin login' to sync shell history"
 echo "  5. Run 'gh auth login' to authenticate GitHub CLI"
-echo "  6. mise use -g go terraform terraform-docs gcloud"
-echo "  7. Edit ~/.claude/settings.json — replace ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN"
+echo "  6. Edit ~/.claude/settings.json — replace ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN"
 echo "  8. Edit ~/.gitconfig — set user.name and user.email"
