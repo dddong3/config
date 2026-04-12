@@ -63,7 +63,7 @@ fi
 
 # ── 4. CLI tools ──
 step "Installing CLI tools..."
-brew install jq bind helm viddy bitwarden-cli uv ccat gh atuin || echo "Warning: some CLI packages failed to install"
+brew install jq bind helm viddy bitwarden-cli uv ccat gh atuin defaultbrowser || echo "Warning: some CLI packages failed to install"
 
 # ── 5. Container & Version manager ──
 step "Installing container & version manager..."
@@ -177,6 +177,88 @@ else
   echo "  ~/.claude/settings.json already exists, skipping."
 fi
 
+# ── macOS System Preferences ──
+step "Configuring macOS system preferences..."
+
+# -- Dock --
+defaults write com.apple.dock tilesize -int 54
+defaults write com.apple.dock autohide -bool true
+defaults write com.apple.dock mineffect -string "scale"
+defaults write com.apple.dock show-recents -bool false
+
+# -- Finder --
+defaults write com.apple.finder ShowPathbar -bool true
+defaults write com.apple.finder ShowStatusBar -bool true
+defaults write NSGlobalDomain AppleShowAllExtensions -bool true
+defaults write com.apple.finder _FXSortFoldersFirst -bool true
+defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
+defaults write com.apple.finder ShowHardDrivesOnDesktop -bool false
+
+# -- Keyboard --
+defaults write NSGlobalDomain KeyRepeat -int 1
+defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
+defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
+defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
+defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
+defaults write com.apple.HIToolbox AppleFnUsageType -int 0
+
+# -- Trackpad --
+defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
+defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool true
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag -bool true
+
+# -- Appearance --
+defaults write NSGlobalDomain AppleInterfaceStyle -string "Dark"
+defaults write com.apple.WindowManager EnableTiledWindowMargins -bool false
+
+# -- Siri --
+defaults write com.apple.Siri StatusMenuVisible -bool false
+
+# -- Screenshots --
+mkdir -p ~/Pictures/Screenshot
+defaults write com.apple.screencapture location -string "~/Pictures/Screenshot"
+
+# -- Menu bar clock --
+defaults write com.apple.menuextra.clock ShowDate -int 0
+defaults write com.apple.menuextra.clock ShowDayOfWeek -bool true
+defaults write com.apple.menuextra.clock ShowAMPM -bool true
+defaults write com.apple.menuextra.clock ShowSeconds -bool false
+
+# -- Menu bar items (hide from menu bar, keep in Control Center) --
+defaults write com.apple.controlcenter "NSStatusItem Visible WiFi" -bool false
+defaults write com.apple.controlcenter "NSStatusItem Visible Sound" -bool false
+defaults write com.apple.controlcenter "NSStatusItem Visible Battery" -bool false
+defaults write com.apple.controlcenter "NSStatusItem Visible FocusModes" -bool false
+defaults write com.apple.controlcenter "NSStatusItem Visible NowPlaying" -bool false
+defaults write com.apple.controlcenter "NSStatusItem Visible ScreenMirroring" -bool false
+
+# -- Default browser --
+if command -v defaultbrowser &>/dev/null; then
+  defaultbrowser browser || echo "  Warning: could not set default browser (set manually in System Settings)"
+fi
+
+# -- TextEdit --
+defaults write com.apple.TextEdit RichText -bool false
+
+# -- Display sleep --
+sudo pmset -a displaysleep 120 2>/dev/null || true
+
+# -- Language & Region --
+defaults write NSGlobalDomain AppleLanguages -array "en-TW" "zh-Hant-TW"
+defaults write NSGlobalDomain AppleLocale -string "en_TW"
+
+# -- Timezone --
+sudo systemsetup -settimezone "Asia/Taipei" 2>/dev/null || true
+
+# Restart affected apps
+killall Dock 2>/dev/null || true
+killall Finder 2>/dev/null || true
+killall SystemUIServer 2>/dev/null || true
+
+echo "  macOS preferences configured."
+
 # ── Verification ──
 echo ""
 echo "=== Verification ==="
@@ -246,11 +328,21 @@ echo "Result: $PASS passed, $FAIL failed"
 echo ""
 echo "=== Setup complete ==="
 echo ""
+
+# Open settings that require manual configuration
+echo "Opening settings that require manual setup..."
+echo "  1. Accessibility: grant access to Mos and Ghostty"
+echo "  2. Passwords: enable Bitwarden as password AutoFill provider"
+open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility" 2>/dev/null || true
+open "x-apple.systempreferences:com.apple.Passwords-Settings.extension" 2>/dev/null || true
+
+echo ""
 echo "Next steps:"
 echo "  1. Restart terminal"
-echo "  2. Run 'bw-setup-secrets' to pull secrets from Vaultwarden"
-echo "  3. Run 'atuin login' to sync shell history"
-echo "  4. Run 'gh auth login' then rerun ./setup.sh to auto-upload SSH key"
-echo "  5. mise use -g go terraform terraform-docs gcloud"
+echo "  2. Grant Accessibility permissions to Mos and Ghostty (settings window opened above)"
+echo "  3. Run 'bw-setup-secrets' to pull secrets from Vaultwarden"
+echo "  4. Run 'atuin login' to sync shell history"
+echo "  5. Run 'gh auth login' then rerun ./setup.sh to auto-upload SSH key"
+echo "  6. mise use -g go terraform terraform-docs gcloud"
 echo "  7. Edit ~/.claude/settings.json to replace ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN"
 echo "  8. Edit ~/.gitconfig to set user.name and user.email"
