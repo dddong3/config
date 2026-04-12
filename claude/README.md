@@ -38,21 +38,32 @@ Claude Code 支援兩種認證，**不可混用**：
 | `ANTHROPIC_SMALL_FAST_MODEL` | 輕量模型（subagent 用） |
 | `CLAUDE_CODE_EFFORT_LEVEL` | `low` / `medium` / `max` |
 | `CLAUDE_CODE_SUBAGENT_MODEL` | subagent 模型 |
-| `DISABLE_NON_ESSENTIAL_MODEL_CALLS` | 減少背景 model 呼叫 |
 | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | 啟用 agent teams |
+
+`DISABLE_NON_ESSENTIAL_MODEL_CALLS` 已移除 — 開啟後會自動生成對話標題，方便搜尋歷史對話。
+
+### permissions
+
+deny 優先於 allow。`Bash(ls *)` 的空格是 word boundary，不會 match `lsof`。
+
+注意：`Read`/`Edit` deny rules 只擋 Claude 內建工具，**不擋 `Bash(cat .env)`** — 需要 sandbox 才能做到 OS 層級阻擋。
 
 ### hooks
 
 可用的 hook 事件：
 
-| 事件 | 觸發時機 |
-|------|----------|
-| `PreToolUse` | 執行工具前 |
-| `PostToolUse` | 執行工具後 |
-| `Notification` | 需要使用者注意時 |
-| `Stop` | agent 停止時 |
-| `SessionStart` | session 開始 |
-| `UserPromptSubmit` | 使用者送出 prompt 時 |
+| 事件 | 觸發時機 | 用法 |
+|------|----------|------|
+| `PreToolUse` | 執行工具前 | 攔截危險操作（exit 2 = 阻擋） |
+| `PostToolUse` | 執行工具後 | 自動 lint/format |
+| `Notification` | 需要使用者注意時 | macOS 通知 |
+| `Stop` | agent 停止時 | 跑測試確認沒壞 |
+| `SessionStart` | session 開始 | 初始化環境 |
+| `UserPromptSubmit` | 使用者送出 prompt 時 | 注入額外 context |
+
+目前啟用的 hooks：
+- **Notification** — macOS 桌面通知
+- **PostToolUse** — JS/TS 檔案編輯後自動 `eslint --fix`
 
 ### statusLine
 

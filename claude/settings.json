@@ -9,11 +9,51 @@
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-4.6-sonnet[1m]",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-4.5-haiku",
     "CLAUDE_CODE_SUBAGENT_MODEL": "claude-4.6-sonnet",
-    "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
     "CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS": "1",
     "CLAUDE_CODE_EFFORT_LEVEL": "max",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git branch *)",
+      "Bash(git checkout *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(grep *)",
+      "Bash(* --version)",
+      "Bash(* --help)",
+      "Bash(npm run *)",
+      "Bash(npm test *)",
+      "Bash(yarn *)",
+      "Bash(pnpm *)",
+      "Bash(go test *)",
+      "Bash(go build *)",
+      "Bash(python *)",
+      "Bash(uv *)",
+      "Bash(mise *)",
+      "Bash(terraform plan *)",
+      "Bash(terraform validate *)",
+      "Bash(helm template *)",
+      "Bash(kubectl get *)",
+      "Bash(kubectl describe *)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | bash)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)"
+    ]
   },
   "hooks": {
     "Notification": [
@@ -23,6 +63,17 @@
           {
             "type": "command",
             "command": "osascript -e 'display notification \"Claude Code needs your attention\" with title \"Claude Code\"'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT_FILE_PATH\" | grep -qE '\\.(js|ts|jsx|tsx)$'; then npx eslint --fix \"$CLAUDE_TOOL_INPUT_FILE_PATH\" 2>/dev/null; fi"
           }
         ]
       }
