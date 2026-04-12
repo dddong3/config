@@ -153,8 +153,6 @@ defaults write com.apple.LaunchServices LSQuarantine -bool false
 # -- Dock --
 defaults write com.apple.dock tilesize -int 54
 defaults write com.apple.dock autohide -bool true
-defaults write com.apple.dock autohide-delay -float 0
-defaults write com.apple.dock autohide-time-modifier -float 0
 defaults write com.apple.dock mineffect -string "scale"
 defaults write com.apple.dock show-recents -bool false
 defaults write com.apple.dock mru-spaces -bool false

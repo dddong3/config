@@ -13,7 +13,7 @@
     },
     "files.autoSave": "afterDelay",
     "workbench.iconTheme": "vscode-icons",
-    "workbench.colorTheme": "Cursor Dark Midnight",
+    "workbench.colorTheme": "Aura Soft Dark (Soft Text)",
     "indentRainbow.ignoreErrorLanguages": [
         "json",
         "markdown"
@@ -28,7 +28,7 @@
     ],
     "vsicons.dontShowNewVersionMessage": true,
     "terminal.integrated.defaultProfile.osx": "zsh",
-    "terminal.integrated.fontFamily": "Maple Mono NF CN",
+    "terminal.integrated.fontFamily": "MesloLGS NF",
     "window.zoomPerWindow": false,
     "git.autofetch": true,
     "github.copilot.enable": {
@@ -38,8 +38,9 @@
         "scminput": false,
         "cpp": false
     },
+    "github.copilot.nextEditSuggestions.enabled": true,
     "[json]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "vscode.json-language-features"
     },
     "explorer.fileNesting.patterns": {
         "*.ts": "${capture}.js",
@@ -60,14 +61,15 @@
     "sqliteViewer.maxFileSize": 800,
     "indentRainbow.ignoreLinePatterns": [
         "^ {2}+$",
-        "/[ \t]* [*]/g",
-        "/[ \t]+[/]{2}/g"
+        "/[ \\t]* [*]/g",
+        "/[ \\t]+[/]{2}/g"
     ],
     "git.confirmSync": false,
     "editor.formatOnSave": false,
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
     },
+    "editor.detectIndentation": false,
     "i18n-ally.localesPaths": [
         "locales",
         "src/tools/*/locales"
@@ -81,24 +83,22 @@
     ],
     "indentRainbow.includedLanguages": [],
     "sqltools.disableNodeDetectNotifications": true,
-    "editor.detectIndentation": false,
-    "cursor.cpp.disabledLanguages": [
-        "markdown",
-        "scminput",
-        "cpp"
-    ],
-    "diffEditor.maxComputationTime": 0,
+    "docker.extension.enableComposeLanguageServer": false,
     "window.zoomLevel": 2,
     "[dockercompose]": {
         "editor.insertSpaces": true,
         "editor.tabSize": 2,
         "editor.autoIndent": "advanced",
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": true
+        },
         "editor.defaultFormatter": "redhat.vscode-yaml"
     },
     "[github-actions-workflow]": {
         "editor.defaultFormatter": "redhat.vscode-yaml"
     },
     "terminal.explorerKind": "external",
-    "terminal.external.osxExec": "ghostty.app",
-    "svelte.enable-ts-plugin": true
+    "terminal.external.osxExec": "ghostty.app"
 }
