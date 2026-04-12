@@ -166,19 +166,6 @@ fi
 # Add to macOS Keychain
 ssh-add --apple-use-keychain ~/.ssh/id_ed25519 2>/dev/null || echo "  Warning: could not add id_ed25519 to Keychain (run manually: ssh-add --apple-use-keychain ~/.ssh/id_ed25519)"
 ssh-add --apple-use-keychain ~/.ssh/homelab 2>/dev/null || echo "  Warning: could not add homelab key to Keychain (run manually: ssh-add --apple-use-keychain ~/.ssh/homelab)"
-# Upload to GitHub (requires gh auth login first)
-if command -v gh &>/dev/null && gh auth status &>/dev/null; then
-  KEY_TITLE="$(scutil --get ComputerName 2>/dev/null || hostname)-ed25519"
-  if ! gh ssh-key list 2>/dev/null | grep -q "$(cat ~/.ssh/id_ed25519.pub | awk '{print $2}')"; then
-    gh ssh-key add ~/.ssh/id_ed25519.pub --title "$KEY_TITLE"
-    echo "  SSH key added to GitHub as '$KEY_TITLE'."
-  else
-    echo "  SSH key already on GitHub."
-  fi
-else
-  echo "  GitHub CLI not authenticated. Run 'gh auth login' then:"
-  echo "    gh ssh-key add ~/.ssh/id_ed25519.pub --title \"$(hostname)-ed25519\""
-fi
 
 # claude/settings.json uses cp (not symlink) — contains placeholder tokens that need manual replacement
 step "Claude Code settings..."
@@ -389,7 +376,8 @@ echo "  1. Restart terminal"
 echo "  2. Grant Accessibility permissions to Mos and Ghostty (settings window opened above)"
 echo "  3. Run 'bw-setup-secrets' to pull secrets from Vaultwarden"
 echo "  4. Run 'atuin login' to sync shell history"
-echo "  5. Run 'gh auth login' then rerun ./setup.sh to auto-upload SSH key"
+echo "  5. Run 'gh auth login' to authenticate GitHub CLI"
+echo "     Then: gh ssh-key add ~/.ssh/id_ed25519.pub --title \"\$(hostname)-ed25519\""
 echo "  6. mise use -g go terraform terraform-docs gcloud"
 echo "  7. Edit ~/.claude/settings.json to replace ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN"
 echo "  8. Edit ~/.gitconfig to set user.name and user.email"

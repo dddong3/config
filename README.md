@@ -32,7 +32,7 @@ cd config
 2. 授予 Mos 和 Ghostty Accessibility 權限（setup.sh 會自動開啟設定視窗）
 3. 執行 `bw-setup-secrets` 從 Vaultwarden 拉 secrets
 4. 執行 `atuin login` 同步 shell 歷史
-5. 執行 `gh auth login`，然後重跑 `./setup.sh` 自動上傳 SSH key
+5. 執行 `gh auth login` 登入 GitHub CLI
 6. 執行 `mise use -g go terraform terraform-docs gcloud` 安裝語言/工具版本
 7. 編輯 `~/.claude/settings.json`，替換 `ANTHROPIC_BASE_URL` 和 `ANTHROPIC_AUTH_TOKEN`
 8. 編輯 `~/.gitconfig`，填入 `user.name` 和 `user.email`
