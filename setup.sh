@@ -67,6 +67,7 @@ brew install --cask squirrel arc visual-studio-code obsidian bitwarden mos spoti
 
 # ── 7. Brew auto-update ──
 step "Configuring brew auto-update..."
+mkdir -p ~/Library/LaunchAgents
 brew tap homebrew/autoupdate 2>/dev/null || true
 brew autoupdate start 43200 --upgrade --cleanup || echo "Warning: brew autoupdate setup failed"
 
@@ -156,14 +157,14 @@ verify "ccat"               command -v ccat
 verify "chroma"             command -v chroma
 verify "bind (dig)"         command -v dig
 verify "VS Code"            test -d "/Applications/Visual Studio Code.app"
-verify "Squirrel (RIME)"    test -d /Applications/Squirrel.app
+verify "Squirrel (RIME)"    test -d "/Library/Input Methods/Squirrel.app"
 verify "Arc"                test -d /Applications/Arc.app
 verify "Obsidian"           test -d /Applications/Obsidian.app
 verify "Bitwarden (GUI)"    test -d /Applications/Bitwarden.app
 verify "Mos"                test -d /Applications/Mos.app
 verify "Spotify"            test -d /Applications/Spotify.app
 verify "Claude"             test -d /Applications/Claude.app
-verify "Claude Code"        test -d "/Applications/Claude Code.app"
+verify "Claude Code"        command -v claude
 verify "zsh-syntax-hl"      test -f "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 verify "zsh-completions"    test -d "$(brew --prefix)/share/zsh-completions"
 
