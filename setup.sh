@@ -75,6 +75,10 @@ cp "$DOTFILES_DIR/terminal/ghostty.conf" ~/Library/Application\ Support/com.mitc
 cp "$DOTFILES_DIR/editor/vscode-settings.json" ~/Library/Application\ Support/Code/User/settings.json
 cp "$DOTFILES_DIR/ime/rime/bopomofo.custom.yaml" ~/Library/Rime/bopomofo.custom.yaml
 
+# Claude Code (statusline only; settings.json needs manual token setup)
+mkdir -p ~/.claude
+cp "$DOTFILES_DIR/claude/statusline-command.sh" ~/.claude/statusline-command.sh
+
 echo ""
 echo "=== Setup complete ==="
 echo ""

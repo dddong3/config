@@ -13,6 +13,7 @@ macOS 開發環境設定檔備份與新環境建置指南。
 | `editor/` | VS Code / Cursor | `vscode-settings.json` | `~/Library/Application Support/Code/User/settings.json` |
 | `ime/rime/` | RIME 注音 | `bopomofo.custom.yaml` | `~/Library/Rime/bopomofo.custom.yaml` |
 | `macos/` | Automator | `automator.md` | 手動建立 Quick Action |
+| `claude/` | Claude Code | `settings.json`, `statusline-command.sh` | `~/.claude/` |
 
 ## 新環境建置
 
