@@ -21,8 +21,13 @@
     "files.exclude": {
         "**/.DS_Store": true,
         "**/__pycache__": true,
+        "**/*.pyc": true,
         "**/.pytest_cache": true,
+        "**/.terraform": true,
         "**/Thumbs.db": true
+    },
+    "files.associations": {
+        "*.tfstate": "json"
     },
 
     // -- Search --
@@ -80,10 +85,25 @@
     },
 
     // -- Language overrides --
+    "[python]": {
+        "editor.tabSize": 4,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "[go]": {
+        "editor.formatOnSave": true
+    },
+    "[terraform]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "hashicorp.terraform"
+    },
+    "[terraform-vars]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "hashicorp.terraform"
+    },
     "[json]": {
         "editor.defaultFormatter": "vscode.json-language-features"
     },
-    "[tf]": {},
     "[dockercompose]": {
         "editor.insertSpaces": true,
         "editor.autoIndent": "advanced",
@@ -94,9 +114,22 @@
         },
         "editor.defaultFormatter": "redhat.vscode-yaml"
     },
+    "[dockerfile]": {
+        "editor.defaultFormatter": "ms-azuretools.vscode-docker",
+        "editor.formatOnSave": true
+    },
+    "[yaml]": {
+        "editor.defaultFormatter": "redhat.vscode-yaml",
+        "editor.formatOnSave": true
+    },
     "[github-actions-workflow]": {
         "editor.defaultFormatter": "redhat.vscode-yaml"
     },
+
+    // -- Go --
+    "go.lintTool": "golangci-lint",
+    "go.lintOnSave": "file",
+    "go.lintFlags": ["--fast"],
 
     // -- Extensions --
     "vsicons.dontShowNewVersionMessage": true,
