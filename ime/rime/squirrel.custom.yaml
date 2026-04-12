@@ -6,8 +6,6 @@ patch:
     ascii_mode: true
   app_options/com.microsoft.VSCode:
     ascii_mode: true
-  app_options/com.todesktop.230313mzl4w4u92:
-    ascii_mode: true              # Cursor
   app_options/com.googlecode.iterm2:
     ascii_mode: true
   app_options/com.github.wez.wezterm:

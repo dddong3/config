@@ -7,9 +7,9 @@ set -eo pipefail
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 EXPECTED_DIR="$HOME/Code/Github/config"
 
-# Ensure repo is at ~/Code/Github/config
+# Ensure repo is at ~/Code/Github/config (symlinks depend on fixed path)
 if [ "$DOTFILES_DIR" != "$EXPECTED_DIR" ]; then
-  echo "Moving repo from $DOTFILES_DIR to $EXPECTED_DIR..."
+  echo "Moving repo to $EXPECTED_DIR (symlinks require fixed path)..."
   mkdir -p "$(dirname "$EXPECTED_DIR")"
   mv "$DOTFILES_DIR" "$EXPECTED_DIR"
   DOTFILES_DIR="$EXPECTED_DIR"
@@ -74,7 +74,7 @@ fi
 
 # ── 4. CLI tools ──
 step "Installing CLI tools..."
-brew install jq bind helm viddy bitwarden-cli uv ccat gh atuin defaultbrowser || echo "Warning: some CLI packages failed to install"
+brew install jq bind helm viddy bitwarden-cli uv ccat gh atuin defaultbrowser golangci-lint || echo "Warning: some CLI packages failed to install"
 
 # ── 5. Container & Version manager ──
 step "Installing container & version manager..."
@@ -286,6 +286,8 @@ verify "terraform-docs"     command -v terraform-docs
 verify "gcloud"             command -v gcloud
 verify "aws"                command -v aws
 verify "bun"                command -v bun
+verify "go (mise)"          bash -c 'eval "$(mise activate bash)" && command -v go'
+verify "terraform (mise)"   bash -c 'eval "$(mise activate bash)" && command -v terraform'
 verify "atuin"              command -v atuin
 verify "Bitwarden CLI"      command -v bw
 verify "helm"               command -v helm

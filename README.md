@@ -10,7 +10,7 @@ macOS 開發環境設定檔備份與新環境建置指南。
 | `shell/` | vim | `vimrc` | `~/.vimrc` |
 | `prompt/` | Starship | `starship.toml` | `~/.config/starship.toml` |
 | `terminal/` | Ghostty | `ghostty.conf` | `~/Library/Application Support/com.mitchellh.ghostty/config` |
-| `editor/` | VS Code / Cursor | `vscode-settings.json` | `~/Library/Application Support/Code/User/settings.json` |
+| `editor/` | VS Code | `vscode-settings.json` | `~/Library/Application Support/Code/User/settings.json` |
 | `ime/rime/` | RIME 注音 | `bopomofo.custom.yaml` | `~/Library/Rime/bopomofo.custom.yaml` |
 | `git/` | Git | `gitconfig` | `~/.gitconfig` |
 | `macos/` | Automator | `automator.md` | 手動建立 Quick Action |

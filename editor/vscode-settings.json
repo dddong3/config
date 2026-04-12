@@ -48,7 +48,7 @@
 
     // -- Terminal --
     "terminal.integrated.defaultProfile.osx": "zsh",
-    "terminal.integrated.fontFamily": "MesloLGS NF",
+    "terminal.integrated.fontFamily": "Maple Mono NF CN",
     "terminal.integrated.fontSize": 14,
     "terminal.integrated.cursorStyle": "line",
     "terminal.explorerKind": "external",

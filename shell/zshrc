@@ -15,7 +15,7 @@ export PATH="$HOME/.local/bin:$PATH"
 if type brew &>/dev/null; then
   FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
   autoload -Uz compinit
-  compinit
+  compinit -C
 
   # zsh-syntax-highlighting (must be inside brew guard)
   ZSH_HL="$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"

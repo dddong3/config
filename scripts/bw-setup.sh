@@ -48,6 +48,14 @@ echo "$notes" | awk '/BEGIN OPENSSH/{c++} c==2{print; if(/END OPENSSH PRIVATE KE
 echo "$notes" | awk '/ssh-ed25519.*dong3-homelab/{print}' > ~/.ssh/homelab.pub
 chmod 600 ~/.ssh/homelab
 
+# Validate keys are not empty
+for key in ~/.ssh/id_ed25519 ~/.ssh/homelab; do
+  if ! grep -q 'BEGIN OPENSSH' "$key" 2>/dev/null; then
+    echo "  Error: $key is empty or malformed. Check Bitwarden note format."
+    exit 1
+  fi
+done
+
 echo "  SSH keys restored."
 
 # ── 3. Add to Keychain ──
