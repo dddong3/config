@@ -1,0 +1,46 @@
+
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "<your-api-base-url>",
+    "ANTHROPIC_AUTH_TOKEN": "<your-auth-token>",
+    "ANTHROPIC_MODEL": "claude-4.6-opus[1m]",
+    "ANTHROPIC_SMALL_FAST_MODEL": "claude-4.6-sonnet",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-4.6-opus[1m]",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-4.6-sonnet[1m]",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-4.5-haiku",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-4.6-sonnet",
+    "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
+    "CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS": "1",
+    "CLAUDE_CODE_EFFORT_LEVEL": "max",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude Code needs your attention\" with title \"Claude Code\"'"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "dev-workflow@barbarians-claude-skills": true,
+    "code-review@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "atlassian@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true,
+    "hookify@claude-plugins-official": true,
+    "learning-output-style@claude-plugins-official": true,
+    "barbarians@barbarians-claude-skills": true
+  },
+  "alwaysThinkingEnabled": false,
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  }
+}

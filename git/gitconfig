@@ -1,0 +1,17 @@
+[user]
+	name = <your-name>
+	email = <your-email>
+[core]
+	editor = vim
+	autocrlf = input
+[init]
+	defaultBranch = main
+[pull]
+	rebase = true
+[push]
+	autoSetupRemote = true
+[alias]
+	st = status
+	co = checkout
+	br = branch
+	lg = log --oneline --graph --decorate
