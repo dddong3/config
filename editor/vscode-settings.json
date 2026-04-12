@@ -28,7 +28,7 @@
     ],
     "vsicons.dontShowNewVersionMessage": true,
     "terminal.integrated.defaultProfile.osx": "zsh",
-    "terminal.integrated.fontFamily": "MesloLGS NF",
+    "terminal.integrated.fontFamily": "Maple Mono NF CN",
     "window.zoomPerWindow": false,
     "git.autofetch": true,
     "github.copilot.enable": {
@@ -64,11 +64,6 @@
         "/[ \t]+[/]{2}/g"
     ],
     "git.confirmSync": false,
-    "remote.SSH.remotePlatform": {
-        "***REMOVED***--dong3--test": "linux",
-        "***REMOVED***--ac--test": "linux"
-    },
-    "remote.SSH.connectTimeout": 1800,
     "editor.formatOnSave": false,
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
@@ -78,28 +73,6 @@
         "src/tools/*/locales"
     ],
     "i18n-ally.keystyle": "nested",
-    "sqltools.connections": [
-
-        {
-            "previewLimit": 50,
-            "server": "localhost",
-            "port": 5432,
-            "driver": "PostgreSQL",
-            "name": "localhost",
-            "database": "***REMOVED***",
-            "username": "***REMOVED***"
-        },
-        {
-            "previewLimit": 50,
-            "server": "***REMOVED***",
-            "port": 5432,
-            "askForPassword": true,
-            "driver": "PostgreSQL",
-            "name": "a",
-            "database": "postgres",
-            "username": "test"
-        }
-    ],
     "[tf]": {
         "editor.tabSize": 2
     },
