@@ -103,6 +103,23 @@ zshrc 中提供 `bw-setup-secrets` 指令，從 Vaultwarden 的 Secure Note（`d
 | `dotfiles-secrets` | 環境變數（API token、BW_SERVER_URL 等） |
 | `ssh-keys` | SSH private/public key pairs |
 
+### Secret Rotation
+
+| Secret | 如何 rotate | 更新步驟 |
+|--------|------------|----------|
+| `ANTHROPIC_AUTH_TOKEN` | 從平台重新申請 token | 1. 更新 Bitwarden `dotfiles-secrets` 2. 重跑 `./scripts/bw-setup.sh` |
+| `ATUIN_KEY` | 重新註冊 atuin 帳號 | 1. `atuin account logout` 2. 重新 register 3. 更新 Bitwarden `dotfiles-secrets` |
+| SSH key (`id_ed25519`) | 重新生成 | 1. `ssh-keygen -t ed25519 -C "dong3-code" -f ~/.ssh/id_ed25519` 2. 上傳到 Bitwarden（見上方腳本）3. `gh ssh-key add` |
+| SSH key (`homelab`) | 重新生成 | 1. `ssh-keygen -t ed25519 -C "dong3-homelab" -f ~/.ssh/homelab` 2. 上傳到 Bitwarden 3. `ssh-copy-id` 到各 server |
+
+統一流程：
+
+```
+1. 在來源處 rotate（申請新 token / 生成新 key）
+2. 更新 Bitwarden（Vaultwarden 網頁編輯 or 上傳腳本）
+3. 本機重新拉取：./scripts/bw-setup.sh
+```
+
 ## E2E 測試
 
 用 [Tart](https://github.com/cirruslabs/tart) 在乾淨的 macOS VM 中自動測試完整 setup 流程。
