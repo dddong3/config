@@ -5,6 +5,17 @@ set -eo pipefail
 [[ "$(uname)" == "Darwin" ]] || { echo "This script requires macOS."; exit 1; }
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
+EXPECTED_DIR="$HOME/Code/Github/config"
+
+# Ensure repo is at ~/Code/Github/config
+if [ "$DOTFILES_DIR" != "$EXPECTED_DIR" ]; then
+  echo "Moving repo from $DOTFILES_DIR to $EXPECTED_DIR..."
+  mkdir -p "$(dirname "$EXPECTED_DIR")"
+  mv "$DOTFILES_DIR" "$EXPECTED_DIR"
+  DOTFILES_DIR="$EXPECTED_DIR"
+  echo "  Repo moved. Re-running from new location..."
+  exec "$EXPECTED_DIR/setup.sh" "$@"
+fi
 
 STEP=0
 step() { STEP=$((STEP+1)); echo "[$STEP] $1"; }
