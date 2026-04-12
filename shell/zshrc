@@ -8,7 +8,7 @@ plugins=(
   zoxide
 )
 
-source $ZSH/oh-my-zsh.sh
+[ -d "$ZSH" ] && source $ZSH/oh-my-zsh.sh
 
 export PATH="$HOME/.local/bin:$PATH"
 
@@ -16,20 +16,24 @@ if type brew &>/dev/null; then
   FPATH=$(brew --prefix)/share/zsh-completions:$FPATH
   autoload -Uz compinit
   compinit
+
+  # zsh-syntax-highlighting (must be inside brew guard)
+  ZSH_HL="$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+  [ -f "$ZSH_HL" ] && source "$ZSH_HL"
 fi
 
-source "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-
 # mise (version manager)
-eval "$(mise activate zsh)"
+command -v mise &>/dev/null && eval "$(mise activate zsh)"
 
 # Go (runtime managed by mise, GOPATH for user packages)
 export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin
 
 # uv completions
-eval "$(uv generate-shell-completion zsh)"
-eval "$(uvx --generate-shell-completion zsh)"
+if command -v uv &>/dev/null; then
+  eval "$(uv generate-shell-completion zsh)"
+  eval "$(uvx --generate-shell-completion zsh)"
+fi
 
 # Secrets (pulled from Bitwarden once, stored locally)
 # First-time setup: bw-setup-secrets
@@ -39,11 +43,21 @@ bw-setup-secrets() {
   command -v bw &>/dev/null || { echo "Install first: brew install bitwarden-cli"; return 1; }
   bw config server https://***REMOVED***
   bw login 2>/dev/null || true
-  export BW_SESSION=$(bw unlock --raw)
-  bw get notes dotfiles-secrets > ~/.secrets
-  chmod 600 ~/.secrets
-  source ~/.secrets
-  echo "Secrets saved to ~/.secrets and loaded."
+  local BW_SESSION
+  BW_SESSION=$(bw unlock --raw)
+  local tmp
+  tmp=$(mktemp)
+  BW_SESSION="$BW_SESSION" bw get notes dotfiles-secrets > "$tmp"
+  if [ -s "$tmp" ]; then
+    mv "$tmp" ~/.secrets
+    chmod 600 ~/.secrets
+    source ~/.secrets
+    echo "Secrets saved to ~/.secrets and loaded."
+  else
+    rm -f "$tmp"
+    echo "Error: failed to fetch secrets (empty response)."
+    return 1
+  fi
 }
 
 # Colorize plugin
@@ -54,11 +68,11 @@ export ZSH_COLORIZE_TOOL=chroma
 bindkey -r '^R'
 
 # Atuin (shell history sync)
-. "$HOME/.atuin/bin/env"
-eval "$(atuin init zsh)"
+[ -f "$HOME/.atuin/bin/env" ] && . "$HOME/.atuin/bin/env"
+command -v atuin &>/dev/null && eval "$(atuin init zsh)"
 
 # Aliases
 alias c='ccat'
 
 # Prompt (must be last)
-eval "$(starship init zsh)"
+command -v starship &>/dev/null && eval "$(starship init zsh)"
