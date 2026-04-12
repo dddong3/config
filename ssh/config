@@ -1,0 +1,16 @@
+Include ~/.colima/ssh_config
+
+# GitHub
+Host github.com
+    IdentityFile ~/.ssh/id_ed25519
+
+# GitLab
+Host gitlab.com gitlab-isanetworks
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519
+
+# Homelab
+Host 172.30.10.*
+    IdentityFile ~/.ssh/homelab
+    User root

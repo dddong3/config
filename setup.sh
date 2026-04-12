@@ -85,6 +85,7 @@ mkdir -p ~/Library/Rime
 mkdir -p ~/Library/Application\ Support/com.mitchellh.ghostty
 mkdir -p ~/Library/Application\ Support/Code/User
 mkdir -p ~/.claude
+mkdir -p ~/.ssh
 
 ln -sf "$DOTFILES_DIR/shell/zshrc" ~/.zshrc
 ln -sf "$DOTFILES_DIR/shell/vimrc" ~/.vimrc
@@ -99,6 +100,7 @@ else
   echo "  ~/.gitconfig already exists, skipping."
 fi
 ln -sf "$DOTFILES_DIR/claude/statusline-command.sh" ~/.claude/statusline-command.sh
+ln -sf "$DOTFILES_DIR/ssh/config" ~/.ssh/config
 
 # ── SSH key ──
 step "SSH key..."
@@ -176,6 +178,7 @@ verify "gitconfig"          test -f "$HOME/.gitconfig"
 verify "SSH key"            test -f "$HOME/.ssh/id_ed25519"
 verify "statusline script"  test -L "$HOME/.claude/statusline-command.sh"
 verify "claude settings"    test -f "$HOME/.claude/settings.json"
+verify "ssh config"         test -L "$HOME/.ssh/config"
 
 # Font (macOS native check)
 verify "Maple Mono NF CN"   bash -c 'system_profiler SPFontsDataType 2>/dev/null | grep -q "Maple Mono NF CN"'

@@ -14,6 +14,7 @@ macOS 開發環境設定檔備份與新環境建置指南。
 | `ime/rime/` | RIME 注音 | `bopomofo.custom.yaml` | `~/Library/Rime/bopomofo.custom.yaml` |
 | `git/` | Git | `gitconfig` | `~/.gitconfig` |
 | `macos/` | Automator | `automator.md` | 手動建立 Quick Action |
+| `ssh/` | SSH | `config` | `~/.ssh/config` |
 | `claude/` | Claude Code | `settings.json`, `statusline-command.sh` | `~/.claude/` |
 
 ## 新環境建置
