@@ -19,7 +19,7 @@ macOS 開發環境設定檔備份與新環境建置指南。
 
 ## 新環境建置
 
-### 一鍵安裝
+### Stage 1 — 基礎安裝（不需任何認證）
 
 ```bash
 git clone https://github.com/dddong3/config.git
@@ -27,15 +27,22 @@ cd config
 ./setup.sh
 ```
 
-安裝完後：
-1. 重開 terminal
-2. 授予 Mos 和 Ghostty Accessibility 權限（setup.sh 會自動開啟設定視窗）
-3. 執行 `bw-setup-secrets` 從 Vaultwarden 拉 secrets
-4. 執行 `atuin login` 同步 shell 歷史
-5. 執行 `gh auth login` 登入 GitHub CLI
-6. 執行 `mise use -g go terraform terraform-docs gcloud` 安裝語言/工具版本
-7. 編輯 `~/.claude/settings.json`，替換 `ANTHROPIC_BASE_URL` 和 `ANTHROPIC_AUTH_TOKEN`
-8. 編輯 `~/.gitconfig`，填入 `user.name` 和 `user.email`
+安裝 Homebrew、字型、terminal、shell tools、CLI tools、apps、Oh My Zsh，並部署所有 config。
+
+### Stage 2 — Secrets（需要 Bitwarden master password）
+
+重開 terminal 後：
+
+1. 授予 Mos 和 Ghostty Accessibility 權限（setup.sh 會自動開啟設定視窗）
+2. 執行 `./scripts/bw-setup.sh` 從 Bitwarden 還原 secrets + SSH key
+
+### Stage 3 — 服務設定（需要 Stage 2 的 secrets/key）
+
+3. 執行 `atuin login` 同步 shell 歷史
+4. 執行 `gh auth login` 登入 GitHub CLI
+5. 執行 `mise use -g go terraform terraform-docs gcloud` 安裝語言/工具版本
+6. 編輯 `~/.claude/settings.json`，替換 `ANTHROPIC_BASE_URL` 和 `ANTHROPIC_AUTH_TOKEN`
+7. 編輯 `~/.gitconfig`，填入 `user.name` 和 `user.email`
 
 ### SSH Key
 

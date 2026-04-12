@@ -122,51 +122,6 @@ fi
 ln -sf "$DOTFILES_DIR/claude/statusline-command.sh" ~/.claude/statusline-command.sh
 ln -sf "$DOTFILES_DIR/ssh/config" ~/.ssh/config
 
-# ── SSH key (restore from Bitwarden or generate new) ──
-step "SSH key..."
-restore_ssh_keys() {
-  if [ -z "$BW_SESSION" ]; then
-    echo "  Bitwarden not unlocked, skipping key restore."
-    return 1
-  fi
-  local notes
-  notes=$(BW_SESSION="$BW_SESSION" bw get notes ssh-keys 2>/dev/null) || return 1
-  [ -z "$notes" ] && return 1
-
-  echo "$notes" | awk '/BEGIN OPENSSH/{c++} c==1{print; if(/END OPENSSH PRIVATE KEY/)exit}' > "$HOME/.ssh/id_ed25519"
-  echo "$notes" | awk '/ssh-ed25519.*dong3-code/{print}' > "$HOME/.ssh/id_ed25519.pub"
-  chmod 600 "$HOME/.ssh/id_ed25519"
-
-  echo "$notes" | awk '/BEGIN OPENSSH/{c++} c==2{print; if(/END OPENSSH PRIVATE KEY/)exit}' > "$HOME/.ssh/homelab"
-  echo "$notes" | awk '/ssh-ed25519.*dong3-homelab/{print}' > "$HOME/.ssh/homelab.pub"
-  chmod 600 "$HOME/.ssh/homelab"
-
-  echo "  SSH keys restored from Bitwarden."
-  return 0
-}
-
-if [ ! -f "$HOME/.ssh/id_ed25519" ]; then
-  # Try restore from Bitwarden first, fall back to generating new keys
-  if ! restore_ssh_keys; then
-    echo "  Generating new SSH keys..."
-    if [ -n "${SSH_PASSPHRASE_CODE+x}" ]; then
-      ssh-keygen -t ed25519 -C "dong3-code" -f "$HOME/.ssh/id_ed25519" -N "$SSH_PASSPHRASE_CODE"
-    else
-      ssh-keygen -t ed25519 -C "dong3-code" -f "$HOME/.ssh/id_ed25519"
-    fi
-    if [ -n "${SSH_PASSPHRASE_HOMELAB+x}" ]; then
-      ssh-keygen -t ed25519 -C "dong3-homelab" -f "$HOME/.ssh/homelab" -N "$SSH_PASSPHRASE_HOMELAB"
-    else
-      ssh-keygen -t ed25519 -C "dong3-homelab" -f "$HOME/.ssh/homelab"
-    fi
-  fi
-else
-  echo "  SSH keys already exist."
-fi
-# Add to macOS Keychain
-ssh-add --apple-use-keychain ~/.ssh/id_ed25519 2>/dev/null || echo "  Warning: could not add id_ed25519 to Keychain (run manually: ssh-add --apple-use-keychain ~/.ssh/id_ed25519)"
-ssh-add --apple-use-keychain ~/.ssh/homelab 2>/dev/null || echo "  Warning: could not add homelab key to Keychain (run manually: ssh-add --apple-use-keychain ~/.ssh/homelab)"
-
 # claude/settings.json uses cp (not symlink) — contains placeholder tokens that need manual replacement
 step "Claude Code settings..."
 if [ ! -f ~/.claude/settings.json ]; then
@@ -371,13 +326,16 @@ open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibil
 open "x-apple.systempreferences:com.apple.Passwords-Settings.extension" 2>/dev/null || true
 
 echo ""
-echo "Next steps:"
+echo "=== Stage 1 complete (base install) ==="
+echo ""
+echo "Stage 2 — Secrets (requires Bitwarden master password):"
 echo "  1. Restart terminal"
 echo "  2. Grant Accessibility permissions to Mos and Ghostty (settings window opened above)"
-echo "  3. Run 'bw-setup-secrets' to pull secrets from Vaultwarden"
+echo "  3. Run './scripts/bw-setup.sh' to restore secrets and SSH keys"
+echo ""
+echo "Stage 3 — Services (requires Stage 2):"
 echo "  4. Run 'atuin login' to sync shell history"
 echo "  5. Run 'gh auth login' to authenticate GitHub CLI"
-echo "     Then: gh ssh-key add ~/.ssh/id_ed25519.pub --title \"\$(hostname)-ed25519\""
 echo "  6. mise use -g go terraform terraform-docs gcloud"
-echo "  7. Edit ~/.claude/settings.json to replace ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN"
-echo "  8. Edit ~/.gitconfig to set user.name and user.email"
+echo "  7. Edit ~/.claude/settings.json — replace ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN"
+echo "  8. Edit ~/.gitconfig — set user.name and user.email"

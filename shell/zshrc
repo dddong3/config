@@ -35,37 +35,8 @@ if command -v uv &>/dev/null; then
   eval "$(uvx --generate-shell-completion zsh)"
 fi
 
-# Secrets (pulled from Bitwarden once, stored locally)
-# First-time setup: bw-setup-secrets
+# Secrets (pulled from Bitwarden once via scripts/bw-setup.sh)
 [ -f ~/.secrets ] && source ~/.secrets
-
-bw-setup-secrets() {
-  command -v bw &>/dev/null || { echo "Install first: brew install bitwarden-cli"; return 1; }
-
-  if [ -z "$BW_SERVER_URL" ]; then
-    read -r "?Vaultwarden URL: " BW_SERVER_URL
-  fi
-  bw config server "$BW_SERVER_URL"
-
-  bw login --check &>/dev/null || bw login || { echo "Error: bw login failed."; return 1; }
-  local BW_SESSION
-  BW_SESSION=$(bw unlock --raw)
-  local tmp
-  tmp=$(mktemp)
-  BW_SESSION="$BW_SESSION" bw get notes dotfiles-secrets > "$tmp"
-  if [ -s "$tmp" ]; then
-    mv "$tmp" ~/.secrets
-    chmod 600 ~/.secrets
-    source ~/.secrets
-    unset BW_SESSION
-    echo "Secrets saved to ~/.secrets and loaded."
-  else
-    rm -f "$tmp"
-    unset BW_SESSION
-    echo "Error: failed to fetch secrets (empty response)."
-    return 1
-  fi
-}
 
 # Colorize plugin
 export ZSH_COLORIZE_CHROMA_FORMATTER=terminal256
