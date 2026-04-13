@@ -1,7 +1,7 @@
 patch:
   # -- 候選窗外觀 --
   style/horizontal: false
-  style/font_face: "Maple Mono NF CN"
+  style/font_face: "PingFang TC"
   style/font_point: 18
   style/corner_radius: 10
   style/color_scheme: macos_light
