@@ -248,8 +248,8 @@ defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
 chflags nohidden ~/Library 2>/dev/null || true
 
 # -- Keyboard --
-defaults write NSGlobalDomain KeyRepeat -int 1
-defaults write NSGlobalDomain InitialKeyRepeat -int 10
+defaults write NSGlobalDomain KeyRepeat -int 5
+defaults write NSGlobalDomain InitialKeyRepeat -int 15
 defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
 defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
 defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
