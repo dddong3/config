@@ -28,14 +28,26 @@ fi
 export ZSH_DISABLE_COMPFIX=true
 [ -d "$ZSH" ] && source $ZSH/oh-my-zsh.sh
 
-# zsh-syntax-highlighting
+# mise (version manager)
+command -v mise &>/dev/null && eval "$(mise activate zsh)"
+
+# fzf (shell integration — key bindings + completion)
+# Ctrl-R: history search, Ctrl-T: file picker, Alt-C: cd into subdir, **<Tab>: completion
+if [ -n "$BREW_PREFIX" ]; then
+  FZF_SHELL="$BREW_PREFIX/opt/fzf/shell"
+  [ -f "$FZF_SHELL/key-bindings.zsh" ] && source "$FZF_SHELL/key-bindings.zsh"
+  [ -f "$FZF_SHELL/completion.zsh" ]   && source "$FZF_SHELL/completion.zsh"
+fi
+if command -v rg &>/dev/null; then
+  export FZF_DEFAULT_COMMAND='rg --files --hidden --follow --glob "!.git"'
+  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+fi
+
+# zsh-syntax-highlighting (must be sourced last)
 if [ -n "$BREW_PREFIX" ]; then
   ZSH_HL="$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
   [ -f "$ZSH_HL" ] && source "$ZSH_HL"
 fi
-
-# mise (version manager)
-command -v mise &>/dev/null && eval "$(mise activate zsh)"
 
 # Google Cloud SDK
 if [ -n "$BREW_PREFIX" ]; then
