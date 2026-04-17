@@ -177,6 +177,12 @@ fi
 ln -sf "$DOTFILES_DIR/claude/statusline-command.sh" ~/.claude/statusline-command.sh
 ln -sf "$DOTFILES_DIR/ssh/config" ~/.ssh/config
 
+# Automator Quick Actions (Finder right-click → Services)
+mkdir -p ~/Library/Services
+ln -sfn "$DOTFILES_DIR/macos/OpenInVSCode.workflow" ~/Library/Services/OpenInVSCode.workflow
+# Flush Services cache so Finder picks up the new Quick Action
+/System/Library/CoreServices/pbs -flush 2>/dev/null || true
+
 # claude/settings.json uses cp (not symlink) — contains placeholder tokens that need manual replacement
 step "Claude Code settings..."
 if [ ! -f ~/.claude/settings.json ]; then
@@ -393,6 +399,7 @@ verify "SSH key"            test -f "$HOME/.ssh/id_ed25519"
 verify "statusline script"  test -L "$HOME/.claude/statusline-command.sh"
 verify "claude settings"    test -f "$HOME/.claude/settings.json"
 verify "ssh config"         test -L "$HOME/.ssh/config"
+verify "Open in VS Code QA" test -L "$HOME/Library/Services/OpenInVSCode.workflow"
 
 # Font (macOS native check)
 verify "Maple Mono NF CN"   bash -c 'system_profiler SPFontsDataType 2>/dev/null | grep -q "Maple Mono NF CN"'
