@@ -6,6 +6,45 @@ set -eo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 EXPECTED_DIR="$HOME/Code/Github/config"
+EXPECTED_REMOTE="https://github.com/dddong3/config.git"
+
+# ── Ensure Xcode Command Line Tools (provides git) ──
+if ! xcode-select -p &>/dev/null; then
+  echo "Xcode Command Line Tools not installed. Triggering installer..."
+  xcode-select --install 2>/dev/null || true
+  echo ""
+  echo "A GUI dialog should have appeared. Click 'Install' and wait for it to finish,"
+  echo "then re-run this script:"
+  echo "  $0"
+  exit 1
+fi
+
+# ── Ensure we're running from a proper clone of $EXPECTED_REMOTE ──
+ACTUAL_REMOTE=$(git -C "$DOTFILES_DIR" config --get remote.origin.url 2>/dev/null || echo "")
+if [ ! -d "$DOTFILES_DIR/.git" ] || [ "$ACTUAL_REMOTE" != "$EXPECTED_REMOTE" ]; then
+  echo "Not a valid clone of $EXPECTED_REMOTE (got: '${ACTUAL_REMOTE:-none}')"
+  echo "Cloning fresh copy to $EXPECTED_DIR..."
+
+  TMP_CLONE=$(mktemp -d -t config-clone)
+  if ! git clone "$EXPECTED_REMOTE" "$TMP_CLONE/config"; then
+    echo "Error: git clone failed. Check network and remote URL."
+    rm -rf "$TMP_CLONE"
+    exit 1
+  fi
+
+  # Back up existing directory (if any) and swap in fresh clone
+  mkdir -p "$(dirname "$EXPECTED_DIR")"
+  if [ -e "$EXPECTED_DIR" ]; then
+    BACKUP="$EXPECTED_DIR.bak.$(date +%s)"
+    echo "  Backing up existing $EXPECTED_DIR → $BACKUP"
+    mv "$EXPECTED_DIR" "$BACKUP"
+  fi
+  mv "$TMP_CLONE/config" "$EXPECTED_DIR"
+  rm -rf "$TMP_CLONE"
+
+  echo "  Fresh clone at $EXPECTED_DIR. Re-executing setup..."
+  exec "$EXPECTED_DIR/setup.sh" "$@"
+fi
 
 # Ensure repo is at ~/Code/Github/config (symlinks depend on fixed path)
 if [ "$DOTFILES_DIR" != "$EXPECTED_DIR" ]; then
@@ -89,7 +128,15 @@ fi
 
 # ── 6. IME & Apps ──
 step "Installing apps..."
-brew install --cask squirrel arc visual-studio-code obsidian bitwarden mos spotify claude claude-code || true
+brew install --cask squirrel arc visual-studio-code obsidian bitwarden mos spotify claude || true
+
+# ── Claude Code (official bash installer, not brew cask) ──
+step "Installing Claude Code..."
+if command -v claude >/dev/null 2>&1 || [ -x "$HOME/.local/bin/claude" ]; then
+  echo "  Claude Code already installed, skipping."
+else
+  curl -fsSL https://claude.ai/install.sh | bash
+fi
 
 # ── 7. Brew auto-update ──
 step "Configuring brew auto-update..."
