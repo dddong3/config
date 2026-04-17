@@ -42,7 +42,6 @@
       "Bash(kubectl describe *)"
     ],
     "deny": [
-      "Bash(git push --force*)",
       "Bash(git reset --hard*)",
       "Bash(rm -rf *)",
       "Bash(sudo *)",
