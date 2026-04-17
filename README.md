@@ -13,8 +13,8 @@ macOS 開發環境設定檔備份與新環境建置指南。
 | `editor/` | VS Code | `vscode-settings.json` | `~/Library/Application Support/Code/User/settings.json` |
 | `ime/rime/` | RIME 注音 | `bopomofo.custom.yaml` | `~/Library/Rime/bopomofo.custom.yaml` |
 | `git/` | Git | `gitconfig` | `~/.gitconfig` |
-| `macos/` | Automator | `automator.md` | 手動建立 Quick Action |
-| `ssh/` | SSH | `config` | `~/.ssh/config` |
+| `macos/` | Automator | `OpenInVSCode.workflow/` | `~/Library/Services/` (symlink) |
+| `ssh/` | SSH | `config`, `work-profile.sh` | `~/.ssh/config` (symlink) |
 | `claude/` | Claude Code | `settings.json`, `statusline-command.sh` | `~/.claude/` |
 | `scripts/` | 自動化腳本 | `bw-auth.sh`, `bw-setup.sh`, `refresh-secrets.sh`, `rotate-*.sh` | 手動執行 |
 | `test/` | E2E 測試 | `e2e.sh` | 本機 Tart VM 測試 |
@@ -55,12 +55,21 @@ cd config
 
 若 Bitwarden 中沒有 key，需手動生成（見下方）。若需 rotate，用 `scripts/rotate-ssh-keys.sh`（會自動上傳新 key 到 GitHub）。
 
-兩把 key 的用途：
+Key 用途：
 
 | Key | 用途 |
 |-----|------|
-| `~/.ssh/id_ed25519` | GitHub, GitLab 等 code 平台 |
+| `~/.ssh/id_ed25519` | GitHub, GitLab 等 code 平台（personal，預設） |
 | `~/.ssh/homelab` | Proxmox, VM 等 homelab 機器（`172.30.10.*`） |
+| `~/.ssh/work_ed25519` | 工作身份 GitHub（僅工作機需要） |
+
+工作機切換成 work 身份（讓 `github.com` 預設用 work key）：
+
+```bash
+./ssh/work-profile.sh
+```
+
+詳情見 [`ssh/README.md`](ssh/README.md#多身份-github個人--工作切換)。
 
 #### 手動重新生成並同步
 

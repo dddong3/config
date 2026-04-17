@@ -15,3 +15,6 @@ homelab.pub
 
 # SSH private keys backup
 ssh/backup/
+
+# SSH machine-local overrides (created by ssh/work-profile.sh)
+ssh/config.local

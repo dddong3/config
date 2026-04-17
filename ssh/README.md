@@ -4,8 +4,43 @@
 
 | Key | 演算法 | 用途 | 存放位置 |
 |-----|--------|------|----------|
-| `id_ed25519` | ED25519 | GitHub, GitLab 等 code 平台 | `~/.ssh/id_ed25519` |
+| `id_ed25519` | ED25519 | GitHub, GitLab 等 code 平台(personal) | `~/.ssh/id_ed25519` |
 | `homelab` | ED25519 | Proxmox, VM 等 homelab 機器 | `~/.ssh/homelab` |
+| `work_ed25519` | ED25519 | 工作身份 GitHub(EMU 等) | `~/.ssh/work_ed25519` |
+
+## 多身份 GitHub(個人 / 工作切換)
+
+`ssh/config` 預設 `github.com` 走個人 key。工作機透過 `~/.ssh/config.local`(不進 git)覆寫。
+
+### 機制
+
+1. `ssh/config` 第一行 `Include ~/.ssh/config.local` —— SSH 是 first-match-wins,本機覆寫優先。
+2. 永久可用的顯式別名(任何機器):
+   - `github.com-personal` → `id_ed25519`
+   - `github.com-work` → `work_ed25519`
+3. 工作機啟用方式:
+   ```bash
+   ./ssh/work-profile.sh    # 生成 ~/.ssh/config.local,讓 github.com 走 work key
+   ```
+   還原:`rm ~/.ssh/config.local`
+
+### 公司內部 host
+
+`work-profile.sh` 只處理 `github.com`。若需要公司內部 Git server,安裝後**手動**編輯 `~/.ssh/config.local` 新增:
+
+```ssh-config
+Host <internal-host>
+    HostName <internal-host>
+    User git
+    IdentityFile ~/.ssh/work_ed25519
+    IdentitiesOnly yes
+```
+
+公司 hostname 不進 git(這個 repo 是公開的)。
+
+### `IdentitiesOnly yes` 爲什麼重要
+
+沒這行的話 `ssh-agent` 會把所有載入的 key 依序試,GitHub 可能用錯身份 auth(尤其同時有 personal + work key 載入時)。加上後 SSH 只試該 `Host` 指定的 key。
 
 ## 為什麼選 ED25519
 

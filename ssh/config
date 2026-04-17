@@ -1,10 +1,29 @@
+# Machine-specific overrides (not in git) — must come first (first-match-wins)
+Include ~/.ssh/config.local
 Include ~/.colima/ssh_config
 
-# GitHub
+# GitHub (default: personal) — work machines override via ~/.ssh/config.local
 Host github.com
+    HostName github.com
+    User git
     IdentityFile ~/.ssh/id_ed25519
+    IdentitiesOnly yes
 
-# GitLab
+# GitHub Personal alias — always available
+Host github.com-personal
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519
+    IdentitiesOnly yes
+
+# GitHub work alias — usable on any machine with work key
+Host github.com-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/work_ed25519
+    IdentitiesOnly yes
+
+# GitLab (personal)
 Host gitlab.com
     HostName gitlab.com
     User git
