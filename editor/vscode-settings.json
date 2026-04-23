@@ -158,5 +158,7 @@
     "sqltools.useNodeRuntime": false,
     "sqltools.disableNodeDetectNotifications": true,
     "sqliteViewer.maxFileSize": 800,
-    "docker.extension.enableComposeLanguageServer": false
+    "docker.extension.enableComposeLanguageServer": false,
+    "gitlens.ai.model": "vscode",
+    "gitlens.ai.vscode.model": "copilot:gpt-4.1"
 }
