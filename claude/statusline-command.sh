@@ -25,8 +25,19 @@ C_TIME="\033[38;5;60m"      # dark gray #565f89 — time
 C_SEP="\033[38;5;237m"      # separator
 C_RESET="\033[0m"
 
-# Directory (shorten home to ~)
-dir="${cwd/#$HOME/~}"
+# Directory: if inside a worktree show worktree name, otherwise full path (~ shortened)
+if git -C "$cwd" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  wt_path=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null)
+  main_path=$(git -C "$cwd" rev-parse --git-common-dir 2>/dev/null)
+  main_path="${main_path%/.git}"
+  if [ -n "$main_path" ] && [ "$wt_path" != "$main_path" ]; then
+    dir="${wt_path##*/}"
+  else
+    dir="${cwd/#$HOME/~}"
+  fi
+else
+  dir="${cwd/#$HOME/~}"
+fi
 
 # Git branch and status
 git_info=""
