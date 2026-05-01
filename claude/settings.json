@@ -1,9 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
-    "ANTHROPIC_MODEL": "claude-opus-4-7[1m]",
+    "ANTHROPIC_MODEL": "claude-opus-4-6[1m]",
     "ANTHROPIC_SMALL_FAST_MODEL": "claude-sonnet-4-6[1m]",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-7[1m]",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-6[1m]",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-6[1m]",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5",
     "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-4-6[1m]",
@@ -81,14 +81,12 @@
     "command": "bash ~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "dev-workflow@barbarians-claude-skills": true,
     "code-review@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
     "atlassian@claude-plugins-official": true,
     "plugin-dev@claude-plugins-official": true,
     "hookify@claude-plugins-official": true,
-    "learning-output-style@claude-plugins-official": true,
-    "barbarians@barbarians-claude-skills": true
+    "learning-output-style@claude-plugins-official": true
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": false
 }
