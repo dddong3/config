@@ -74,21 +74,6 @@ echo "  Enter the SSH key passphrase you set when generating the key."
 ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 ssh-add --apple-use-keychain ~/.ssh/homelab
 
-# ── 4. Update Claude Code settings ──
-echo "[4] Updating Claude Code settings..."
-source ~/.secrets
-if [ -f ~/.claude/settings.json ] && [ -n "$ANTHROPIC_BASE_URL" ] && [ -n "$ANTHROPIC_AUTH_TOKEN" ]; then
-  tmp_json=$(mktemp)
-  jq --arg url "$ANTHROPIC_BASE_URL" --arg tok "$ANTHROPIC_AUTH_TOKEN" \
-     '.env.ANTHROPIC_BASE_URL = $url | .env.ANTHROPIC_AUTH_TOKEN = $tok' \
-     ~/.claude/settings.json > "$tmp_json"
-  mv "$tmp_json" ~/.claude/settings.json
-  chmod 600 ~/.claude/settings.json
-  echo "  Claude Code settings updated."
-else
-  echo "  Skipped (settings.json or tokens not found)."
-fi
-
 # ── Done ──
 unset BW_SESSION
 echo ""

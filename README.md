@@ -16,7 +16,7 @@ macOS 開發環境設定檔備份與新環境建置指南。
 | `macos/` | Automator | `OpenInVSCode.workflow/` | `~/Library/Services/` (symlink) |
 | `ssh/` | SSH | `config`, `work-profile.sh` | `~/.ssh/config` (symlink) |
 | `claude/` | Claude Code | `settings.json`, `statusline-command.sh` | `~/.claude/` |
-| `scripts/` | 自動化腳本 | `bw-auth.sh`, `bw-setup.sh`, `refresh-secrets.sh`, `rotate-*.sh` | 手動執行 |
+| `scripts/` | 自動化腳本 | `bw-auth.sh`, `bw-setup.sh`, `rotate-*.sh` | 手動執行 |
 | `test/` | E2E 測試 | `e2e.sh` | 本機 Tart VM 測試 |
 
 ## 新環境建置
@@ -96,11 +96,6 @@ gh ssh-key add ~/.ssh/id_ed25519.pub --title "dong3-mbp-ed25519"
 
 `scripts/bw-setup.sh`（Stage 2）首次從 Bitwarden 拉取 secrets 並存入 `~/.secrets`。
 
-之後更新 secrets：在 Vaultwarden 網頁編輯 `dotfiles-secrets` note 後，執行：
-
-```bash
-./scripts/refresh-secrets.sh
-```
 
 ### Bitwarden Secure Notes
 
@@ -115,7 +110,6 @@ gh ssh-key add ~/.ssh/id_ed25519.pub --title "dong3-mbp-ed25519"
 
 | Secret | 腳本 |
 |--------|------|
-| `ANTHROPIC_AUTH_TOKEN` | `./scripts/rotate-anthropic-token.sh` |
 | `ATUIN_KEY` | `./scripts/rotate-atuin-key.sh` |
 | SSH keys | `./scripts/rotate-ssh-keys.sh` |
 
@@ -127,8 +121,6 @@ gh ssh-key add ~/.ssh/id_ed25519.pub --title "dong3-mbp-ed25519"
 |------|------|--------|
 | `bw-auth.sh` | 共用 Bitwarden 認證 helper（被其他腳本 source）| 不直接執行 |
 | `bw-setup.sh` | 首次還原 secrets + SSH key + Claude settings | 新電腦 Stage 2 |
-| `refresh-secrets.sh` | 從 Bitwarden 重新拉取 secrets 並同步 Claude settings | 更新 Bitwarden note 後 |
-| `rotate-anthropic-token.sh` | Rotate API token | token 過期或洩漏 |
 | `rotate-ssh-keys.sh` | Rotate SSH key pair | key 洩漏或定期更換 |
 | `rotate-atuin-key.sh` | Rotate Atuin encryption key | 重新註冊 atuin |
 
