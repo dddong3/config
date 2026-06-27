@@ -75,6 +75,7 @@ command -v atuin &>/dev/null && eval "$(atuin init zsh)"
 # Aliases
 alias c='ccat'
 alias cvault='cd "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Knowledge base" && claude'
+alias claude-ds='claude --settings ~/.claude/settings-ds.json'
 
 # Prompt (must be last)
 command -v starship &>/dev/null && eval "$(starship init zsh)"
