@@ -28,10 +28,16 @@ else
   echo "Creating new item: $ITEM_NAME"
   cat > "$tmp" << 'EOF'
 # One KEY='value' per line, sourced by .zshrc
-# Example:
-# ANTHROPIC_API_KEY='sk-ant-...'
-# ATUIN_KEY='...'
+#
+# ── Bitwarden ──
 # BW_SERVER_URL='https://...'
+#
+# ── DeepSeek (claude-ds) ──
+# DEEPSEEK_BASE_URL='https://api.deepseek.com'
+# DEEPSEEK_API_KEY='sk-...'
+#
+# ── Atuin ──
+# ATUIN_KEY='...'
 EOF
 fi
 
