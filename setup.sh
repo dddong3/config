@@ -134,7 +134,7 @@ else
     KUBERLR_URL="https://github.com/flavio/kuberlr/releases/download/v${KUBERLR_VERSION}/kuberlr_${KUBERLR_VERSION}_darwin_${KUBERLR_ARCH}.tar.gz"
     TMP_KUBERLR=$(mktemp -d)
     if curl -fsSL "$KUBERLR_URL" | tar xz -C "$TMP_KUBERLR"; then
-      sudo cp "$TMP_KUBERLR/kuberlr" /usr/local/bin/kuberlr
+      sudo cp "$TMP_KUBERLR/kuberlr_${KUBERLR_VERSION}_darwin_${KUBERLR_ARCH}/kuberlr" /usr/local/bin/kuberlr
       sudo ln -sf /usr/local/bin/kuberlr /usr/local/bin/kubectl
       echo "  kuberlr installed, kubectl symlinked."
     else
