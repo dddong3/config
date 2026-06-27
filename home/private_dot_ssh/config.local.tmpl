@@ -1,0 +1,9 @@
+{{- if eq .profile "home" }}
+# Homelab
+Host 172.30.10.1
+    User admin
+
+Host 172.30.10.*
+    IdentityFile ~/.ssh/personal_ed25519
+    User root
+{{- end }}

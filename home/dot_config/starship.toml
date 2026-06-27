@@ -50,10 +50,6 @@ fish_style_pwd_dir_length = 0
 truncate_to_repo = false
 
 [directory.substitutions]
-"Documents" = "󰈙 "
-"Downloads" = " "
-"Music" = " "
-"Pictures" = " "
 
 # ── Git ──
 [git_branch]

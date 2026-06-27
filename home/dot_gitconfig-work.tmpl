@@ -1,0 +1,6 @@
+{{- $id := (bitwarden "item" "git-identity").notes | fromJson -}}
+[user]
+	name = {{ $id.work.name }}
+	email = {{ $id.work.email }}
+[core]
+	sshCommand = ssh -i ~/.ssh/work_ed25519 -o IdentitiesOnly=yes

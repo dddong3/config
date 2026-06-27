@@ -1,79 +1,115 @@
 #!/bin/bash
 set -eo pipefail
 
-# Rotate SSH keys
-# 1. Generate new key pairs
+# Rotate SSH keys for this machine
+# 1. Generate new key pairs (temp dir, then move)
 # 2. Add to Keychain
-# 3. Upload to Bitwarden
-# 4. Upload code key to GitHub
+# 3. Update per-host Bitwarden backup
+# 4. Upload personal key to GitHub
 
-echo "=== Rotate SSH Keys ==="
+HOSTNAME=$(scutil --get LocalHostName 2>/dev/null || hostname -s)
+HOSTNAME=$(echo "$HOSTNAME" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd 'a-z0-9-' | sed 's/--*/-/g; s/^-//; s/-$//')
+HOSTNAME=${HOSTNAME:-mac-$(date +%s | tail -c 7)}
+
+SSH_KEYS=(
+  "personal_ed25519:${HOSTNAME}-personal"
+  "work_ed25519:${HOSTNAME}-work"
+)
+
+echo "=== Rotate SSH Keys ($HOSTNAME) ==="
 echo ""
 
 # Generate new keys (to temp first, then move — avoids losing keys if keygen fails)
 echo "[1] Generating new keys..."
-tmp_code=$(mktemp -d)
-tmp_lab=$(mktemp -d)
-trap 'rm -rf "$tmp_code" "$tmp_lab"' EXIT
+tmp_dir=$(mktemp -d)
+trap 'rm -rf "$tmp_dir"' EXIT
 
-ssh-keygen -t ed25519 -C "dong3-code" -f "$tmp_code/id_ed25519"
-ssh-keygen -t ed25519 -C "dong3-homelab" -f "$tmp_lab/homelab"
+while true; do
+  read -rsp "  Enter passphrase for SSH keys: " SSH_PASSPHRASE; echo
+  read -rsp "  Confirm passphrase: " SSH_PASSPHRASE_CONFIRM; echo
+  if [ "$SSH_PASSPHRASE" = "$SSH_PASSPHRASE_CONFIRM" ]; then
+    if [ -z "$SSH_PASSPHRASE" ]; then
+      echo "  Error: passphrase cannot be empty."
+    else
+      break
+    fi
+  else
+    echo "  Error: passphrases do not match."
+  fi
+done
 
-mv "$tmp_code/id_ed25519" ~/.ssh/id_ed25519
-mv "$tmp_code/id_ed25519.pub" ~/.ssh/id_ed25519.pub
-mv "$tmp_lab/homelab" ~/.ssh/homelab
-mv "$tmp_lab/homelab.pub" ~/.ssh/homelab.pub
+for entry in "${SSH_KEYS[@]}"; do
+  KEY_FILE="${entry%%:*}"
+  KEY_COMMENT="${entry##*:}"
+  ssh-keygen -t ed25519 -C "$KEY_COMMENT" -N "$SSH_PASSPHRASE" -f "$tmp_dir/$KEY_FILE"
+done
+unset SSH_PASSPHRASE SSH_PASSPHRASE_CONFIRM
+
+for entry in "${SSH_KEYS[@]}"; do
+  KEY_FILE="${entry%%:*}"
+  mv "$tmp_dir/$KEY_FILE" "$HOME/.ssh/$KEY_FILE"
+  mv "$tmp_dir/$KEY_FILE.pub" "$HOME/.ssh/$KEY_FILE.pub"
+done
 
 # Add to Keychain
 echo ""
 echo "[2] Adding to Keychain..."
-ssh-add --apple-use-keychain ~/.ssh/id_ed25519
-ssh-add --apple-use-keychain ~/.ssh/homelab
+for entry in "${SSH_KEYS[@]}"; do
+  ssh-add --apple-use-keychain "$HOME/.ssh/${entry%%:*}"
+done
 
 # Upload to Bitwarden
 echo ""
-echo "[3] Uploading to Bitwarden..."
+echo "[3] Updating Bitwarden backup..."
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/bw-auth.sh"
 
-NOTES=$(jq -rn \
-  --rawfile code_key "$HOME/.ssh/id_ed25519" \
-  --rawfile code_pub "$HOME/.ssh/id_ed25519.pub" \
-  --rawfile lab_key "$HOME/.ssh/homelab" \
-  --rawfile lab_pub "$HOME/.ssh/homelab.pub" \
-  '"--- id_ed25519 (code) ---\n" + $code_key + "\n--- id_ed25519.pub ---\n" + $code_pub + "\n--- homelab (private) ---\n" + $lab_key + "\n--- homelab.pub ---\n" + $lab_pub')
-ITEM=$(bw get item ssh-keys)
-ITEM_ID=$(echo "$ITEM" | jq -r '.id')
-ENCODED=$(echo "$ITEM" | jq --arg notes "$NOTES" '.notes = $notes' | bw encode)
-bw edit item "$ITEM_ID" "$ENCODED" > /dev/null
-echo "  Bitwarden updated."
+ITEM_NAME="ssh-keys-${HOSTNAME}"
+BW_NOTES=$(jq -rn \
+  --arg host "$HOSTNAME" \
+  --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --rawfile personal_key "$HOME/.ssh/personal_ed25519" \
+  --rawfile personal_pub "$HOME/.ssh/personal_ed25519.pub" \
+  --rawfile work_key "$HOME/.ssh/work_ed25519" \
+  --rawfile work_pub "$HOME/.ssh/work_ed25519.pub" \
+  '"# \($host) — \($date)\n\n--- personal_ed25519 ---\n" + $personal_key + "\n--- personal_ed25519.pub ---\n" + $personal_pub + "\n--- work_ed25519 ---\n" + $work_key + "\n--- work_ed25519.pub ---\n" + $work_pub')
+
+if bw get item "$ITEM_NAME" &>/dev/null; then
+  ITEM=$(bw get item "$ITEM_NAME")
+  ITEM_ID=$(echo "$ITEM" | jq -r '.id')
+  ENCODED=$(echo "$ITEM" | jq --arg notes "$BW_NOTES" '.notes = $notes' | bw encode)
+  bw edit item "$ITEM_ID" "$ENCODED" > /dev/null
+else
+  bw get template item | jq \
+    --arg name "$ITEM_NAME" \
+    --arg notes "$BW_NOTES" \
+    '.name = $name | .type = 2 | .secureNote = {"type": 0} | .notes = $notes' \
+    | bw encode | bw create item > /dev/null
+fi
+echo "  Bitwarden updated ($ITEM_NAME)."
 
 # Upload to GitHub
 echo ""
-echo "[4] Updating GitHub..."
-if command -v gh &>/dev/null && gh auth status &>/dev/null; then
-  # Remove old key from this machine (match by title)
-  KEY_TITLE="$(scutil --get ComputerName 2>/dev/null || hostname)-ed25519"
-  OLD_ID=$(gh api /user/keys --jq --arg title "$KEY_TITLE" '.[] | select(.title == $title) | .id' 2>/dev/null | head -1)
-  [ -n "$OLD_ID" ] && gh ssh-key delete "$OLD_ID" --yes 2>/dev/null
-  gh ssh-key add ~/.ssh/id_ed25519.pub --title "$KEY_TITLE"
-  echo "  GitHub updated ($KEY_TITLE)."
-else
-  echo "  gh not authenticated. Run manually:"
-  echo "    gh ssh-key add ~/.ssh/id_ed25519.pub --title \"$(hostname)-ed25519\""
-fi
+echo "[4] Re-upload SSH keys to GitHub hosts."
+echo "  Rotated keys:"
+for entry in "${SSH_KEYS[@]}"; do
+  KEY_FILE="${entry%%:*}"
+  echo "    ~/.ssh/$KEY_FILE.pub"
+done
+echo ""
+echo "  Remove old keys and re-upload:"
+echo "    gh ssh-key add ~/.ssh/<key>.pub --title \"${HOSTNAME}-<purpose>\""
+echo "  For GHES/EMU:"
+echo "    GH_HOST=github.example.com gh ssh-key add ~/.ssh/work_ed25519.pub --title \"${HOSTNAME}-work\""
 
 # Verify
 echo ""
 echo "[5] Verifying..."
 ssh -T git@github.com 2>&1 | grep -q "successfully" && echo "  GitHub SSH: OK" || echo "  GitHub SSH: FAIL"
 
-diff <(cat ~/.ssh/id_ed25519) <(bw get notes ssh-keys | awk '/BEGIN OPENSSH/{c++} c==1{print; if(/END OPENSSH PRIVATE KEY/)exit}') > /dev/null 2>&1 && echo "  BW id_ed25519: OK" || echo "  BW id_ed25519: MISMATCH"
-
-diff <(cat ~/.ssh/homelab) <(bw get notes ssh-keys | awk '/BEGIN OPENSSH/{c++} c==2{print; if(/END OPENSSH PRIVATE KEY/)exit}') > /dev/null 2>&1 && echo "  BW homelab: OK" || echo "  BW homelab: MISMATCH"
-
 unset BW_SESSION
 
 echo ""
-echo "Done. Remember to deploy homelab key to servers:"
-echo "  ssh-copy-id -i ~/.ssh/homelab.pub root@<server-ip>"
+echo "Done. Remember to:"
+echo "  - Deploy personal key to homelab: ssh-copy-id -i ~/.ssh/personal_ed25519.pub root@<server-ip>"
+echo "  - Upload work key to work GitHub org (if applicable)"

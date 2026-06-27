@@ -1,0 +1,70 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+set -eo pipefail
+
+HOSTNAME=$(scutil --get LocalHostName 2>/dev/null || hostname -s)
+HOSTNAME=$(echo "$HOSTNAME" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd 'a-z0-9-' | sed 's/--*/-/g; s/^-//; s/-$//')
+HOSTNAME=${HOSTNAME:-mac-$(date +%s | tail -c 7)}
+
+echo "=== SSH Key Generation ($HOSTNAME) ==="
+echo ""
+
+mkdir -p ~/.ssh
+
+SSH_KEYS=(
+  "personal_ed25519:${HOSTNAME}-personal"
+  "work_ed25519:${HOSTNAME}-work"
+)
+
+KEYS_TO_GENERATE=()
+for entry in "${SSH_KEYS[@]}"; do
+  KEY_FILE="${entry%%:*}"
+  if [ -f "$HOME/.ssh/$KEY_FILE" ]; then
+    echo "  ~/.ssh/$KEY_FILE already exists, skipping."
+  else
+    KEYS_TO_GENERATE+=("$entry")
+  fi
+done
+
+if [ ${#KEYS_TO_GENERATE[@]} -gt 0 ]; then
+  while true; do
+    read -rsp "  Enter passphrase for SSH keys: " SSH_PASSPHRASE; echo
+    read -rsp "  Confirm passphrase: " SSH_PASSPHRASE_CONFIRM; echo
+    if [ "$SSH_PASSPHRASE" = "$SSH_PASSPHRASE_CONFIRM" ]; then
+      if [ -z "$SSH_PASSPHRASE" ]; then
+        echo "  Error: passphrase cannot be empty."
+      else
+        break
+      fi
+    else
+      echo "  Error: passphrases do not match."
+    fi
+  done
+
+  for entry in "${KEYS_TO_GENERATE[@]}"; do
+    KEY_FILE="${entry%%:*}"
+    KEY_COMMENT="${entry##*:}"
+    ssh-keygen -t ed25519 -C "$KEY_COMMENT" -N "$SSH_PASSPHRASE" -f "$HOME/.ssh/$KEY_FILE"
+  done
+  unset SSH_PASSPHRASE SSH_PASSPHRASE_CONFIRM
+
+  for entry in "${SSH_KEYS[@]}"; do
+    ssh-add --apple-use-keychain "$HOME/.ssh/${entry%%:*}"
+  done
+else
+  echo "  All keys already exist."
+fi
+
+echo ""
+echo "Upload SSH public keys to GitHub:"
+for entry in "${SSH_KEYS[@]}"; do
+  KEY_FILE="${entry%%:*}"
+  echo "  gh ssh-key add ~/.ssh/$KEY_FILE.pub --title \"${HOSTNAME}-${KEY_FILE%%_*}\""
+done
+echo "For GHES/EMU:"
+echo "  gh auth login --hostname github.example.com"
+echo "  GH_HOST=github.example.com gh ssh-key add ..."
+
+echo ""
+echo "=== SSH keys ready ==="
+{{ end -}}

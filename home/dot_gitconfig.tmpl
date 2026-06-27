@@ -1,0 +1,57 @@
+{{- $id := (bitwarden "item" "git-identity").notes | fromJson -}}
+[user]
+	name = {{ $id.personal.name }}
+	email = {{ $id.personal.email }}
+[core]
+	editor = vim
+	autocrlf = input
+	hooksPath = ~/.git-hooks
+	sshCommand = ssh -i ~/.ssh/personal_ed25519 -o IdentitiesOnly=yes
+[fetch]
+	prune = true
+	pruneTags = true
+	fsckObjects = true
+[diff]
+	algorithm = histogram
+	colorMoved = plain
+	mnemonicPrefix = true
+[log]
+	date = iso
+[column]
+	ui = auto
+[rerere]
+	enabled = true
+[transfer]
+	fsckObjects = true
+[receive]
+	fsckObjects = true
+[help]
+	autocorrect = prompt
+[tag]
+	sort = -version:refname
+[gc]
+	reflogExpire = 180
+	reflogExpireUnreachable = 90
+[init]
+	defaultBranch = main
+[merge]
+	ff = only
+[rebase]
+	autoSquash = true
+	autoStash = true
+[pull]
+	rebase = true
+[branch]
+	sort = -committerdate
+[push]
+	autoSetupRemote = true
+	useForceIfIncludes = true
+{{ range $id.work.orgs -}}
+[includeIf "hasconfig:remote.*.url:git@github.com:{{ . }}/**"]
+	path = ~/.gitconfig-work
+{{ end -}}
+[alias]
+	st = status
+	co = checkout
+	br = branch
+	lg = log --oneline --graph --decorate

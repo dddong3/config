@@ -1,0 +1,12 @@
+# Machine-specific overrides (not in git) — must come first (first-match-wins)
+Include ~/.ssh/config.local
+Include ~/.colima/ssh_config
+
+Host *
+    AddKeysToAgent yes
+    UseKeychain yes
+    IdentitiesOnly yes
+    HashKnownHosts yes
+    ForwardAgent no
+    ServerAliveInterval 60
+    ServerAliveCountMax 3

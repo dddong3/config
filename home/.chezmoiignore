@@ -1,0 +1,3 @@
+{{ if eq .profile "work" }}
+.ssh/config.local
+{{ end }}

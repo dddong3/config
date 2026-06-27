@@ -1,0 +1,11 @@
+sourceDir = "{{ .chezmoi.sourceDir }}"
+
+[data]
+  profile = "{{ promptStringOnce . "profile" "Profile (home/work)" }}"
+
+[edit]
+  apply = true
+
+[git]
+  autoCommit = true
+  autoPush = true
