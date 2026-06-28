@@ -81,7 +81,7 @@ claude-ds() {
   claude --settings ~/.claude/settings-ds.json "$@"
 }
 cza() {
-  source "$(chezmoi source-path)/../scripts/bw-auth.sh" && chezmoi apply
+  source "$(chezmoi source-path)/../scripts/bw-auth.sh" && BW_SESSION="$BW_SESSION" chezmoi apply
 }
 
 # Prompt (must be last)

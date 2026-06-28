@@ -1,7 +1,7 @@
 #!/bin/bash
 # Shared Bitwarden authentication helper
 # Usage: source "$SCRIPT_DIR/bw-auth.sh"
-# Provides: BW_SESSION (exported)
+# Provides: BW_SESSION (set, not exported — callers pass it explicitly)
 #
 # Logic:
 #   1. BW_SESSION already set and valid → reuse
@@ -34,4 +34,4 @@ if [ -z "$BW_SESSION" ]; then
   echo "Error: Bitwarden authentication failed (empty session)."
   return 1 2>/dev/null || exit 1
 fi
-export BW_SESSION
+# BW_SESSION is now set in the caller's shell scope

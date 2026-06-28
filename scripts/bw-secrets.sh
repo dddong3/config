@@ -14,6 +14,7 @@ echo ""
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/bw-auth.sh"
+export BW_SESSION
 bw sync
 
 EXISTING=$(bw get item "$ITEM_NAME" 2>/dev/null || echo "")
