@@ -14,7 +14,6 @@ macOS 開發環境設定檔備份與新環境建置指南。
 | `ime/rime/` | RIME 注音 | `bopomofo.custom.yaml` | `~/Library/Rime/bopomofo.custom.yaml` |
 | `git/` | Git | `gitconfig` | `~/.gitconfig` |
 | `macos/` | Automator | `OpenInVSCode.workflow/` | `~/Library/Services/` (symlink) |
-| `ssh/` | SSH | `config`, `work-profile.sh` | `~/.ssh/config` (symlink) |
 | `claude/` | Claude Code | `settings.json`, `statusline-command.sh` | `~/.claude/` |
 | `scripts/` | 自動化腳本 | `bw-auth.sh`, `bw-setup.sh`, `rotate-*.sh` | 手動執行 |
 | `test/` | E2E 測試 | `e2e.sh` | 本機 Tart VM 測試 |
@@ -42,7 +41,7 @@ cd config
 
 ### Stage 3 — 服務設定（需要 Stage 2 的 secrets/key）
 
-3. 上傳 SSH key 到 GitHub（如果是新 key）：`gh ssh-key add ~/.ssh/id_ed25519.pub --title "$(hostname)-ed25519"`
+3. 上傳 SSH key 到 GitHub（如果是新 key）：`gh ssh-key add ~/.ssh/personal_ed25519.pub --title "$(hostname)-personal"`
 4. `gh auth login` 登入 GitHub CLI（選 SSH protocol）
 5. `atuin login`，encryption key 用：`grep ATUIN_KEY ~/.secrets | cut -d"'" -f2`
 6. 編輯 `~/.gitconfig`，填入 `user.name` 和 `user.email`
@@ -50,37 +49,19 @@ cd config
 ### SSH Key
 
 `scripts/bw-setup.sh`（Stage 2）會處理 SSH key：
-1. 從 Bitwarden Secure Note（`ssh-keys`）還原已有的 key pair
+1. 從 Bitwarden Secure Note（`ssh-keys-{hostname}`）還原已有的 key pair
 2. 加入 macOS Keychain
 
-若 Bitwarden 中沒有 key，需手動生成（見下方）。若需 rotate，用 `scripts/rotate-ssh-keys.sh`（會自動上傳新 key 到 GitHub）。
+若 Bitwarden 中沒有 key，需手動生成或用 `scripts/rotate-ssh-keys.sh`（會自動生成、上傳到 Bitwarden 和 GitHub）。
 
 Key 用途：
 
 | Key | 用途 |
 |-----|------|
-| `~/.ssh/id_ed25519` | GitHub, GitLab 等 code 平台（personal，預設） |
-| `~/.ssh/homelab` | Proxmox, VM 等 homelab 機器（`172.30.10.*`） |
+| `~/.ssh/personal_ed25519` | GitHub, GitLab 等 code 平台（personal，預設） |
 | `~/.ssh/work_ed25519` | 工作身份 GitHub（僅工作機需要） |
 
-工作機切換成 work 身份（讓 `github.com` 預設用 work key）：
-
-```bash
-./ssh/work-profile.sh
-```
-
-詳情見 [`ssh/README.md`](ssh/README.md#多身份-github個人--工作切換)。
-
 #### 手動重新生成並同步
-
-```bash
-ssh-keygen -t ed25519 -C "dong3-code" -f ~/.ssh/id_ed25519
-ssh-keygen -t ed25519 -C "dong3-homelab" -f ~/.ssh/homelab
-ssh-add --apple-use-keychain ~/.ssh/id_ed25519
-ssh-add --apple-use-keychain ~/.ssh/homelab
-```
-
-上傳到 Bitwarden 並同步 GitHub（使用 rotation 腳本一次完成）：
 
 ```bash
 ./scripts/rotate-ssh-keys.sh
@@ -89,7 +70,7 @@ ssh-add --apple-use-keychain ~/.ssh/homelab
 或手動上傳到 GitHub：
 
 ```bash
-gh ssh-key add ~/.ssh/id_ed25519.pub --title "dong3-mbp-ed25519"
+gh ssh-key add ~/.ssh/personal_ed25519.pub --title "$(hostname)-personal"
 ```
 
 ### Secrets 管理
@@ -101,8 +82,8 @@ gh ssh-key add ~/.ssh/id_ed25519.pub --title "dong3-mbp-ed25519"
 
 | Note 名稱 | 內容 |
 |-----------|------|
-| `dotfiles-secrets` | 環境變數（API token、BW_SERVER_URL 等） |
-| `ssh-keys` | SSH private/public key pairs |
+| `dotfiles-secrets-{home,work}` | 環境變數（API token、BW_SERVER_URL 等） |
+| `ssh-keys-{hostname}` | SSH private/public key pairs |
 
 ### Secret Rotation
 
