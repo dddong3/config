@@ -4,19 +4,28 @@ macOS 開發環境設定檔備份與新環境建置指南。
 
 ## 結構
 
-| 資料夾 | 工具 | 設定檔 | 部署位置 |
-|--------|------|--------|----------|
-| `shell/` | zsh | `zshrc` | `~/.zshrc` |
-| `shell/` | vim | `vimrc` | `~/.vimrc` |
-| `prompt/` | Starship | `starship.toml` | `~/.config/starship.toml` |
-| `terminal/` | Ghostty | `ghostty.conf` | `~/Library/Application Support/com.mitchellh.ghostty/config` |
-| `editor/` | VS Code | `vscode-settings.json` | `~/Library/Application Support/Code/User/settings.json` |
-| `ime/rime/` | RIME 注音 | `bopomofo.custom.yaml` | `~/Library/Rime/bopomofo.custom.yaml` |
-| `git/` | Git | `gitconfig` | `~/.gitconfig` |
-| `macos/` | Automator | `OpenInVSCode.workflow/` | `~/Library/Services/` (symlink) |
-| `claude/` | Claude Code | `settings.json`, `statusline-command.sh` | `~/.claude/` |
-| `scripts/` | 自動化腳本 | `bw-auth.sh`, `bw-setup.sh`, `rotate-*.sh` | 手動執行 |
-| `test/` | E2E 測試 | `e2e.sh` | 本機 Tart VM 測試 |
+所有 config 由 chezmoi 管理，source 在 `home/` 下。
+
+| 工具 | Source（`home/` 下） | 部署位置 |
+|------|---------------------|----------|
+| zsh | `dot_zshrc` | `~/.zshrc` |
+| vim | `dot_vimrc` | `~/.vimrc` |
+| Starship | `dot_config/starship.toml` | `~/.config/starship.toml` |
+| Ghostty | `Library/Application Support/com.mitchellh.ghostty/config` | 同路徑 |
+| VS Code | `Library/Application Support/Code/User/settings.json` | 同路徑 |
+| RIME 注音 | `Library/Rime/bopomofo.custom.yaml` | `~/Library/Rime/` |
+| Git | `dot_gitconfig.tmpl`, `dot_gitconfig-work.tmpl` | `~/.gitconfig`, `~/.gitconfig-work` |
+| SSH | `private_dot_ssh/config`, `config.local.tmpl` | `~/.ssh/config` |
+| Claude Code | `private_dot_claude/settings.json`, `statusline-command.sh` | `~/.claude/` |
+| Secrets | `private_dot_secrets.tmpl` | `~/.secrets`（從 Bitwarden 拉取） |
+
+其他目錄：
+
+| 資料夾 | 用途 |
+|--------|------|
+| `macos/` | Automator Quick Actions（`OpenInVSCode.workflow`） |
+| `scripts/` | 自動化腳本（`bw-auth.sh`, `bw-setup.sh`, `rotate-*.sh`） |
+| `test/` | E2E 測試（Tart VM） |
 
 ## 新環境建置
 

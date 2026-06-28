@@ -76,8 +76,8 @@ command -v atuin &>/dev/null && eval "$(atuin init zsh)"
 alias c='ccat'
 alias cvault='cd "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/Knowledge base" && claude'
 claude-ds() {
-  ANTHROPIC_BASE_URL=$(grep DEEPSEEK_BASE_URL ~/.secrets | cut -d"'" -f2) \
-  ANTHROPIC_API_KEY=$(grep DEEPSEEK_API_KEY ~/.secrets | cut -d"'" -f2) \
+  ANTHROPIC_BASE_URL="$DEEPSEEK_BASE_URL" \
+  ANTHROPIC_API_KEY="$DEEPSEEK_API_KEY" \
   claude --settings ~/.claude/settings-ds.json "$@"
 }
 alias cza='export BW_SESSION=$(bw unlock --raw) && chezmoi apply'
