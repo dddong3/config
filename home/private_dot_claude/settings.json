@@ -106,5 +106,6 @@
     "ultrathink@ekstend": true
   },
   "alwaysThinkingEnabled": false,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "effortLevel": "xhigh"
 }
