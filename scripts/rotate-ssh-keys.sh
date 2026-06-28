@@ -22,7 +22,9 @@ echo ""
 # Generate new keys (to temp first, then move — avoids losing keys if keygen fails)
 echo "[1] Generating new keys..."
 tmp_dir=$(mktemp -d)
-trap 'rm -rf "$tmp_dir"' EXIT
+passfile=$(mktemp)
+askpass=$(mktemp)
+trap 'rm -rf "$tmp_dir" "$passfile" "$askpass"' EXIT
 
 while true; do
   read -rsp "  Enter passphrase for SSH keys: " SSH_PASSPHRASE; echo
@@ -38,13 +40,18 @@ while true; do
   fi
 done
 
+chmod 600 "$passfile"
+printf '%s' "$SSH_PASSPHRASE" > "$passfile"
+chmod 700 "$askpass"
+printf '#!/bin/sh\ncat "%s"\n' "$passfile" > "$askpass"
+unset SSH_PASSPHRASE SSH_PASSPHRASE_CONFIRM
+
 for entry in "${SSH_KEYS[@]}"; do
   KEY_FILE="${entry%%:*}"
   KEY_COMMENT="${entry##*:}"
-  # -N puts passphrase in argv (ps-visible); ssh-keygen has no stdin alternative
-  ssh-keygen -t ed25519 -C "$KEY_COMMENT" -N "$SSH_PASSPHRASE" -f "$tmp_dir/$KEY_FILE"
+  SSH_ASKPASS="$askpass" SSH_ASKPASS_REQUIRE=force \
+    ssh-keygen -t ed25519 -C "$KEY_COMMENT" -f "$tmp_dir/$KEY_FILE"
 done
-unset SSH_PASSPHRASE SSH_PASSPHRASE_CONFIRM
 
 for entry in "${SSH_KEYS[@]}"; do
   KEY_FILE="${entry%%:*}"

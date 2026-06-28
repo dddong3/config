@@ -41,12 +41,21 @@ if [ ${#KEYS_TO_GENERATE[@]} -gt 0 ]; then
     fi
   done
 
+  passfile=$(mktemp)
+  askpass=$(mktemp)
+  trap 'rm -f "$passfile" "$askpass"' EXIT
+  chmod 600 "$passfile"
+  printf '%s' "$SSH_PASSPHRASE" > "$passfile"
+  chmod 700 "$askpass"
+  printf '#!/bin/sh\ncat "%s"\n' "$passfile" > "$askpass"
+  unset SSH_PASSPHRASE SSH_PASSPHRASE_CONFIRM
+
   for entry in "${KEYS_TO_GENERATE[@]}"; do
     KEY_FILE="${entry%%:*}"
     KEY_COMMENT="${entry##*:}"
-    ssh-keygen -t ed25519 -C "$KEY_COMMENT" -N "$SSH_PASSPHRASE" -f "$HOME/.ssh/$KEY_FILE"
+    SSH_ASKPASS="$askpass" SSH_ASKPASS_REQUIRE=force \
+      ssh-keygen -t ed25519 -C "$KEY_COMMENT" -f "$HOME/.ssh/$KEY_FILE"
   done
-  unset SSH_PASSPHRASE SSH_PASSPHRASE_CONFIRM
 
   for entry in "${SSH_KEYS[@]}"; do
     ssh-add --apple-use-keychain "$HOME/.ssh/${entry%%:*}"
