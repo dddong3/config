@@ -24,7 +24,7 @@ macOS 開發環境設定檔備份與新環境建置指南。
 | 資料夾 | 用途 |
 |--------|------|
 | `macos/` | Automator Quick Actions（`OpenInVSCode.workflow`） |
-| `scripts/` | 自動化腳本（`bw-auth.sh`, `bw-secrets.sh`, `rotate-*.sh`） |
+| `scripts/` | 自動化腳本（`bw-auth.sh`, `bw-secrets.sh`） |
 | `test/` | E2E 測試（Tart VM） |
 
 ## 新環境建置
@@ -66,10 +66,12 @@ SSH key 在 Stage 1 由 `chezmoi apply` 自動生成（`run_once_before_02-ssh-k
 | `~/.ssh/personal_ed25519` | GitHub, GitLab 等 code 平台（personal，預設） |
 | `~/.ssh/work_ed25519` | 工作身份 GitHub（僅工作機需要） |
 
-需要 rotate 時：
+需要 rotate 時手動執行：
 
 ```bash
-./scripts/rotate-ssh-keys.sh
+ssh-keygen -t ed25519 -C "$(hostname)-personal" -f ~/.ssh/personal_ed25519
+ssh-add --apple-use-keychain ~/.ssh/personal_ed25519
+gh ssh-key add ~/.ssh/personal_ed25519.pub --title "$(hostname)-personal"
 ```
 
 ### Secrets 管理
@@ -82,23 +84,12 @@ SSH key 在 Stage 1 由 `chezmoi apply` 自動生成（`run_once_before_02-ssh-k
 |-----------|------|
 | `dotfiles-secrets-{home,work}` | 環境變數（API token、BW_SERVER_URL 等） |
 
-### Secret Rotation
-
-| Secret | 腳本 |
-|--------|------|
-| `ATUIN_KEY` | `./scripts/rotate-atuin-key.sh` |
-| SSH keys | `./scripts/rotate-ssh-keys.sh` |
-
-腳本會自動更新本機（atuin key 同步更新 Bitwarden）。
-
 ### Scripts 一覽
 
 | 腳本 | 用途 | 何時用 |
 |------|------|--------|
 | `bw-auth.sh` | 共用 Bitwarden 認證 helper（被其他腳本 source）| 不直接執行 |
 | `bw-secrets.sh` | 編輯 Bitwarden 中的 secrets | 新增或修改環境變數 |
-| `rotate-ssh-keys.sh` | Rotate SSH key pair | key 洩漏或定期更換 |
-| `rotate-atuin-key.sh` | Rotate Atuin encryption key | 重新註冊 atuin |
 
 ## 維護 Checklist
 
@@ -111,8 +102,7 @@ SSH key 在 Stage 1 由 `chezmoi apply` 自動生成（`run_once_before_02-ssh-k
 
 新增 secret 時：
 
-5. 在 Bitwarden `dotfiles-secrets` note 加入 `export KEY=value`
-6. 如需 rotation 自動化，新增 `scripts/rotate-*.sh`（source `bw-auth.sh`）
+5. 用 `./scripts/bw-secrets.sh` 編輯 Bitwarden `dotfiles-secrets-{profile}` note
 
 注意：`setup.sh` 會安裝 pre-commit hook 防止意外 commit secrets，僅在執行 `setup.sh` 後生效。
 
