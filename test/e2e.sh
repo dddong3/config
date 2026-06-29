@@ -73,7 +73,7 @@ $SSH "git clone $REPO_URL ~/config"
 echo "[6] Running setup.sh inside VM..."
 echo "    (this may take 10-15 minutes for brew installs)"
 echo ""
-$SSH "cd ~/config && ./setup.sh" 2>&1 | tee "$LOG"
+$SSH "cd ~/config && SKIP_BW_AUTH=1 ./setup.sh" 2>&1 | tee "$LOG"
 
 # ── 7. Results ──
 echo ""
@@ -85,10 +85,10 @@ echo ""
 # Show all verify results
 grep -E '(✓|✗|Result:)' "$LOG" || true
 
-# Expected failures after Stage 1 (no secrets/SSH key yet)
-EXPECTED_FAILS=("SSH key")
+# Expected failures after Stage 1 (no Bitwarden auth — secrets/gitconfig not deployed)
+EXPECTED_FAILS=("SSH key" "gitconfig")
 echo ""
-echo "Note: '${EXPECTED_FAILS[*]}' is expected to fail (requires Stage 2: cza)"
+echo "Note: '${EXPECTED_FAILS[*]}' are expected to fail (requires Bitwarden login)"
 
 echo ""
 TOTAL_FAIL=$(grep -c '✗' "$LOG" || true)

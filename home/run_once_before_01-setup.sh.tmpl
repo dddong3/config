@@ -280,16 +280,12 @@ open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibil
 open "x-apple.systempreferences:com.apple.Passwords-Settings.extension" 2>/dev/null || true
 
 echo ""
-echo "=== Stage 1 complete (base install) ==="
+echo "=== Stage 1 complete (base install + secrets) ==="
 echo ""
-echo "Stage 2 — Secrets (requires Bitwarden master password):"
+echo "Next steps:"
 echo "  1. Restart terminal"
 echo "  2. Grant Accessibility permissions to Mos and Ghostty (settings window opened above)"
-echo "  3. cza  # unlock Bitwarden + chezmoi apply to deploy ~/.secrets"
-echo ""
-echo "Stage 3 — Services (requires Stage 2):"
-echo "  4. Upload SSH keys to GitHub: gh ssh-key add ~/.ssh/personal_ed25519.pub --title \"\$(hostname)-personal\""
-echo "  5. gh auth login (select SSH protocol)"
-echo "  6. atuin login（encryption key 在 ~/.secrets：ATUIN_KEY）"
-echo "  7. export BW_SESSION=\$(bw unlock --raw) && bw sync && chezmoi apply"
+echo "  3. Upload SSH keys to GitHub: gh ssh-key add ~/.ssh/personal_ed25519.pub --title \"\$(hostname)-personal\""
+echo "  4. gh auth login (select SSH protocol)"
+echo "  5. atuin login（encryption key 在 ~/.secrets：ATUIN_KEY）"
 {{ end -}}
