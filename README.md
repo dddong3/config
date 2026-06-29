@@ -98,6 +98,7 @@ gh ssh-key add ~/.ssh/personal_ed25519.pub --title "$(hostname)-personal"
 |------|------|--------|
 | `bw-auth.sh` | 共用 Bitwarden 認證 helper（被其他腳本 source）| 不直接執行 |
 | `bw-secrets.sh` | 編輯 Bitwarden 中的 secrets | 新增或修改環境變數 |
+| `bw-note.sh` | 新增或編輯任意 Bitwarden Secure Note | `./scripts/bw-note.sh <name> [file]` |
 
 ## 維護 Checklist
 
