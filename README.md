@@ -85,12 +85,25 @@ gh ssh-key add ~/.ssh/personal_ed25519.pub --title "$(hostname)-personal"
 
 ### Bitwarden Secure Notes
 
-| Note 名稱 | 內容 |
-|-----------|------|
-| `dotfiles-secrets-{home,work}` | 環境變數（API token、BW_SERVER_URL 等） |
-| `git-identity` | Git user.name / user.email（`dot_gitconfig.tmpl` 使用） |
-| `claude-settings-local-work` | Claude Code work profile 的 `settings.local.json`（plugins、hooks） |
-| `claude-hook-jenkins-work` | Claude Code Jenkins curl hook script（work profile） |
+| Note 名稱 | 內容 | 使用者 |
+|-----------|------|--------|
+| `dotfiles-secrets-{home,work}` | 環境變數（API token、BW_SERVER_URL 等） | `private_dot_secrets.tmpl` |
+| `git-identity` | Git user.name / user.email | `dot_gitconfig.tmpl` |
+| `claude-settings-local-work` | Claude Code work profile 的 `settings.local.json`（plugins、hooks） | `settings.local.json.tmpl` |
+| `claude-hook-jenkins-work` | Claude Code Jenkins curl hook script | `executable_jenkins-curl-netrc.sh.tmpl` |
+
+管理 notes：
+
+```bash
+# 編輯環境變數 secrets（專用腳本，有預設 template）
+./scripts/bw-secrets.sh home    # 或 work
+
+# 新增或編輯任意 Secure Note（互動模式，用 $EDITOR 開啟）
+./scripts/bw-note.sh claude-settings-local-work
+
+# 從檔案匯入建立/更新 note
+./scripts/bw-note.sh claude-hook-jenkins-work claude/hooks/jenkins-curl-netrc.sh
+```
 
 ### Scripts 一覽
 
