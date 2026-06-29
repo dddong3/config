@@ -90,6 +90,7 @@ gh ssh-key add ~/.ssh/personal_ed25519.pub --title "$(hostname)-personal"
 | `dotfiles-secrets-{home,work}` | 環境變數（API token、BW_SERVER_URL 等） |
 | `git-identity` | Git user.name / user.email（`dot_gitconfig.tmpl` 使用） |
 | `claude-settings-local-work` | Claude Code work profile 的 `settings.local.json`（plugins、hooks） |
+| `claude-hook-jenkins-work` | Claude Code Jenkins curl hook script（work profile） |
 
 ### Scripts 一覽
 

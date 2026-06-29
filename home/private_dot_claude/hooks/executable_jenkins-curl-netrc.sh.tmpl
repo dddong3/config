@@ -1,0 +1,3 @@
+{{- if eq .profile "work" -}}
+{{ (bitwarden "item" "claude-hook-jenkins-work").notes }}
+{{- end -}}
